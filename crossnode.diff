@@ -1,0 +1,441 @@
+--- game.compiled.js	2024-04-04 16:08:36.295581355 +0200
++++ game.compiled.node.js	2024-04-04 16:07:29.578445453 +0200
+@@ -1,4 +1,163 @@
+-'use strict'
++// 'use strict'
++/* weird stuff start */
++
++import { JSDOM } from 'jsdom'
++const dom = new JSDOM(`
++<!DOCTYPE html>
++<html>
++    <body>
++        <div id="game" >
++            <canvas id="canvas"></canvas>
++        </div>
++    </body>
++</html>
++`, {
++    pretendToBeVisual: true,
++})
++global.window = dom.window
++windowFix('document')
++windowFix('DOMParser')
++window.process = process
++
++function windowFix(path) {
++    global[path] = window[path]
++}
++window.IG_GAME_SCALE = 2
++windowFix('IG_GAME_SCALE')
++window.IG_GAME_CACHE = ''
++windowFix('IG_GAME_CACHE')
++window.IG_ROOT = '/home/krypek/home/.local/share/Steam/steamapps/common/CrossCode/assets/'
++windowFix('IG_ROOT')
++window.IG_WIDTH = 568
++windowFix('IG_WIDTH')
++window.IG_HEIGHT = 320
++windowFix('IG_HEIGHT')
++window.IG_HIDE_DEBUG = false
++windowFix('IG_HIDE_DEBUG')
++window.IG_SCREEN_MODE_OVERRIDE = 2
++windowFix('IG_SCREEN_MODE_OVERRIDE')
++window.IG_WEB_AUDIO_BGM = false
++windowFix('IG_WEB_AUDIO_BGM')
++window.IG_FORCE_HTML5_AUDIO = false
++windowFix('IG_FORCE_HTML5_AUDIO')
++window.LOAD_LEVEL_ON_GAME_START = null
++windowFix('LOAD_LEVEL_ON_GAME_START')
++window.IG_GAME_DEBUG = false
++windowFix('IG_GAME_DEBUG')
++window.IG_GAME_BETA = false
++windowFix('IG_GAME_BETA')
++
++import { Navigator } from 'node-navigator'
++const navigator = new Navigator()
++
++import { LocalStorage } from 'node-localstorage'
++global.localStorage = new LocalStorage('./scratch')
++
++window.HTMLElement = function () {}
++windowFix('HTMLElement')
++
++window.name = ''
++windowFix('name')
++
++import { Image } from 'canvas'
++
++import jquery from 'jquery'
++window.$ = jquery(window)
++windowFix('$')
++
++import CryptoJS from 'crypto-js'
++window.CryptoJS = CryptoJS
++windowFix('CryptoJS')
++
++await import('../impact/page/js/seedrandom.js')
++
++window.Audio = function (arg) {
++    return {
++        addEventListener(type, listener) {
++            // console.log(`Audio: addEventListener(${type}, ${listener.toString().replace(/\n/g, '').replace(/ /g, '')})`)
++            if (type == 'canplaythrough') {
++                setTimeout(() => {
++                    listener.bind(this)()
++                }, 0)
++            }
++        },
++        removeEventListener(type, duno, boo) {
++            // console.log(`Audio: removeEventListener(${type}, ${duno}, ${boo})`)
++        },
++        load() {
++            // console.log(`Audio: load()`)
++        },
++    }
++}
++windowFix('Audio')
++
++function skipTitleScreen() {
++    sc.TitleScreenGui.inject({
++      init(...args) {
++        this.parent(...args);
++        if (true) {
++          this.introGui.timeLine = [{ time: 0, end: true }];
++          this.bgGui.parallax.addLoadListener({
++            onLoadableComplete: () => {
++              let { timeLine } = this.bgGui;
++              let idx = timeLine.findIndex((item) => item.time > 0);
++              if (idx < 0) idx = timeLine.length;
++              timeLine.splice(idx, 0, { time: 0, goto: 'INTRO_SKIP_NOSOUND' });
++            },
++          });
++          this.removeChildGui(this.startGui);
++          this.startGui = {
++            show: () => {
++              ig.interact.removeEntry(this.screenInteract);
++              this.buttons.show();
++            },
++            hide: () => {},
++          };
++        }
++      },
++    });
++}
++
++setTimeout(() => {
++    skipTitleScreen()
++
++    window.startCrossCode()
++
++    function keyPress(time, keyCode) {
++        return [
++            { time, event: "keydown", opts: { keyCode } },
++            { time: 10, event: "keyup", opts: { keyCode } },
++        ]
++    }
++    const actions = [
++        ...keyPress(2e3, 40),
++        ...keyPress(10, 13),
++
++        ...keyPress(5e3, 13),
++        ...keyPress(500, 89),
++        ...keyPress(10, 13),
++    ]
++    let i = 0
++
++    function nextAction() {
++        const act = actions[i++]
++        if (!act) return
++        setTimeout(() => {
++            window.dispatchEvent(new window.KeyboardEvent(act.event, act.opts))
++            nextAction()
++        }, act.time || 0)
++    }
++    nextAction()
++}, 1e3)
++
++import * as fs from 'fs'
++setInterval(() => {
++    if (!(ig && ig.system && ig.system.canvas)) return
++    const canvas = ig.system.canvas
++    fs.writeFileSync('image.png', Buffer.from(canvas.toDataURL().split(',')[1], 'base64'));
++}, 1000 / 15)
++
++/* weird stuff end */
+ ;(function () {
+     function b(a, b, c, d) {
+         a = ((c.x - a.x) * (b.x - a.x) + (c.y - a.y) * (b.y - a.y)) / e.squareDistance(a, b)
+@@ -628,6 +787,7 @@
+         _loadQueue: [],
+         _waitForOnload: 0,
+         $: function (a) {
++            // /* weird */ if (a == '#canvas') return canvas
+             return a.charAt(0) == '#' ? document.getElementById(a.substr(1)) : document.getElementsByTagName(a)
+         },
+         $new: function (a) {
+@@ -790,6 +950,7 @@
+         },
+     }
+     window.ig = window.ig
++    windowFix('ig')
+     ig.ENTITY = {}
+     var n = !1,
+         p = /xyz/.test(function (a) {
+@@ -946,6 +1107,7 @@
+                 : 'Unknown' != ig.browser
+                   ? ig.PLATFORM_TYPES.BROWSER
+                   : ig.PLATFORM_TYPES.UNKNOWN
++
+     ig.nwjsVersion = null
+     ig.nwjs64 = !1
+     if (ig.platform == ig.PLATFORM_TYPES.DESKTOP) {
+@@ -1101,7 +1263,8 @@
+         ig.fileForwarding = {}
+         ig.getFilePath = function (a) {
+             a && (a = a.trim())
+-            return ig.fileForwarding[a] ? ig.fileForwarding[a] : a
++            const res = ig.fileForwarding[a] ? ig.fileForwarding[a] : a
++            return `file://${res}`
+         }
+         ig.Cacheable = ig.Class.extend({
+             cacheType: null,
+@@ -1411,7 +1574,7 @@
+                     this.data = new Image()
+                     this.data.onload = this.onload.bind(this)
+                     this.data.onerror = this.onerror.bind(this)
+-                    this.data.src = ig.getFilePath(ig.root + this.path + ig.getCacheSuffix())
++                    this.data.src = ig.root + this.path + ig.getCacheSuffix()
+                 },
+                 onCacheCleared: function () {
+                     this.data = null
+@@ -1478,7 +1641,9 @@
+                     }
+                 },
+                 onerror: function () {
+-                    this.loadingFinished(false)
++                    console.log('Image error!', this.data.src)
++                    this.data = new Image()
++                    this.onload()
+                 },
+                 getTileSrc: function (a, b, c, d, e, f, g) {
+                     e = e || 0
+@@ -2997,7 +3162,8 @@
+         .requires('impact.base.loader', 'impact.base.system.web-audio')
+         .defines(function () {
+             function a(b) {
+-                b = ig.root + b.match(/^(.*)\.[^\.]+$/)[1] + '.' + ig.soundManager.format.ext + ig.getCacheSuffix()
++                const ext = 'ogg' //ig.soundManager.format.ext
++                b = ig.root + b.match(/^(.*)\.[^\.]+$/)[1] + '.' + ext + ig.getCacheSuffix()
+                 return ig.getFilePath(b)
+             }
+             var b = 0,
+@@ -3034,6 +3200,17 @@
+                 tracksToUpdate: [],
+                 hasWebAudio: false,
+                 init: function () {
++                    this.context = {
++                        getSampleRate() {
++                            return 0
++                        },
++                        getCurrentTimeRaw() {
++                            return 0
++                        },
++                        context: {
++                            state: 'duno',
++                        },
++                    }
+                     if (!ig.Sound.enabled || !window.Audio) ig.Sound.enabled = false
+                     else {
+                         if (window.IG_SOUND_VOLUME != void 0) this.volume = window.IG_SOUND_VOLUME
+@@ -3051,6 +3228,7 @@
+                                 ? ig.debug('WebAudio detected. Using full WebAudio Implementation.')
+                                 : window.IG_WEB_AUDIO_BGM || ig.debug('WebAudio (No BGM) detected. Using sound-only WebAudio Implementation.')
+                         } else ig.debug('No WebAudio. Using default Audio Implementation')
++
+                         setInterval(this._updateTracks.bind(this), 16)
+                     }
+                 },
+@@ -3597,10 +3775,12 @@
+                 },
+                 play: function () {
+                     this._initSounds()
++                    return
+                     this.introPlayed ? this.sound.play() : this.introSound.play()
+                 },
+                 pause: function () {
+                     this._initSounds()
++                    return
+                     this.introPlayed ? this.sound.pause() : this.introSound.pause()
+                 },
+                 _initSounds: function () {
+@@ -4153,7 +4333,7 @@
+             }
+             ig.Sound.use = [ig.Sound.FORMAT.OGG, ig.Sound.FORMAT.MP3]
+             ig.Sound.channels = 4
+-            ig.Sound.enabled = true
++            ig.Sound.enabled = false
+         })
+     ig.baked = !0
+     ig.module('impact.base.timer').defines(function () {
+@@ -5352,7 +5532,7 @@
+                 loadInternal: function () {
+                     for (var a = 0; a < ig.langFileList.length; ++a) {
+                         var b = ig.root + ig.langFileList[a].toPath('data/lang/', '.' + ig.currentLang + '.json')
+-                        $.ajax({ dataType: 'json', url: b + ig.getCacheSuffix(), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
++                        $.ajax({ dataType: 'json', url: ig.getFilePath(b + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
+                     }
+                     this._doCallback()
+                 },
+@@ -5519,6 +5699,16 @@
+ window.assert = window.assert
+ window.assertContent = window.assertContent
+ window.sc || ((window.sc = {}), (window.sc = window.sc))
++
++windowFix('Vec3')
++windowFix('Vec2')
++windowFix('Line2')
++windowFix('KeySpline')
++windowFix('KEY_SPLINES')
++windowFix('assert')
++windowFix('assertContent')
++windowFix('sc')
++
+ ig.baked = !0
+ ig.module('impact.base.sprite-fx')
+     .requires('impact.base.image')
+@@ -10061,7 +10251,7 @@
+             this.parent()
+         },
+         loadInternal: function () {
+-            $.ajax({ dataType: 'json', url: ig.root + ig.TILEINFO_FILE + ig.getCacheSuffix(), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
++            $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.TILEINFO_FILE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
+         },
+         onerror: function () {
+             this.tiledata = {}
+@@ -10323,7 +10513,13 @@
+                 return c
+             },
+             loadInternal: function () {
+-                $.ajax({ dataType: 'json', url: ig.root + 'data/global-settings.json' + ig.getCacheSuffix(), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
++                $.ajax({
++                    dataType: 'json',
++                    url: ig.getFilePath(ig.root + 'data/global-settings.json' + ig.getCacheSuffix()),
++                    context: this,
++                    success: this.onload.bind(this),
++                    error: this.onerror.bind(this),
++                })
+             },
+             onerror: function () {
+                 this.data = {}
+@@ -10386,7 +10582,10 @@
+             return this.extensions[a]
+         },
+         loadInternal: function () {
+-            ig.platform == ig.PLATFORM_TYPES.DESKTOP ? this.loadExtensionsNWJS() : this.loadExtensionsPHP()
++            /* weird */
++            const b = ig.getFilePath(this._getExtensionFolder())
++            fs.readdir(b, this.onDirRead.bind(this))
++            // ig.platform == ig.PLATFORM_TYPES.DESKTOP ? this.loadExtensionsNWJS() : this.loadExtensionsPHP()
+         },
+         loadExtensionsPHP: function () {
+             $.ajax({
+@@ -10407,7 +10606,7 @@
+         },
+         onDirRead: function (a, b) {
+             var c = this._getExtensionFolder(),
+-                e = window.require('fs'),
++                e = /* weird */ /*window.require('fs'),*/ fs,
+                 f = []
+             if (!a)
+                 for (var g = 0; g < b.length; ++g) {
+@@ -11608,6 +11807,7 @@
+ ig.baked = !0
+ ig.module('game.constants').defines(function () {
+     window.Constants = window.Constants = { BALL_HEIGHT: 12, BALL_SIZE: 8, BALL_Z_HEIGHT: 8 }
++    windowFix('Constants')
+ })
+ ig.baked = !0
+ ig.module('impact.feature.database.database')
+@@ -11630,7 +11830,8 @@
+                 return this.data[b]
+             },
+             loadInternal: function () {
+-                $.ajax({ dataType: 'json', url: ig.root + ig.DATABASE_FILE + ig.getCacheSuffix(), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
++                // $.ajax({ dataType: 'json', url: ig.root + ig.DATABASE_FILE + ig.getCacheSuffix(), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
++                $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.DATABASE_FILE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
+             },
+             onerror: function (b) {
+                 this.data = { error: b }
+@@ -31462,7 +31663,7 @@
+                 return !c ? ig.TERRAIN_DEFAULT : c[b - 1]
+             },
+             loadInternal: function () {
+-                $.ajax({ dataType: 'json', url: ig.root + ig.TERRAIN_FILE + ig.getCacheSuffix(), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
++                $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.TERRAIN_FILE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
+             },
+             onerror: function () {
+                 this.tilesetIds = {}
+@@ -33313,11 +33514,13 @@
+                 for (b = this.segments.length; b--; ) for (var a = this.segments[b].entries.length; a--; ) this.segments[b].entries[a].sound.clearCached()
+             },
+             start: function () {
++                return
+                 for (var b = this.loopSounds.length; b--; ) this.loopHandles.push(this.loopSounds[b].play(true))
+                 this.currentSegment = -1
+                 this.timer = this.currentEntry = 0
+             },
+             update: function () {
++                return
+                 if (this.segments.length && ig.system.tick) {
+                     this.currentSegment == -1 && this._selectSegment()
+                     var b = this.segments[this.currentSegment]
+@@ -33333,6 +33536,7 @@
+                 }
+             },
+             stop: function () {
++                return
+                 for (var b = this.loopHandles.length; b--; ) this.loopHandles[b].stop()
+                 this.loopHandles.length = 0
+             },
+@@ -33999,7 +34203,7 @@
+                 return this.major != this.oldMajor || this.minor != this.oldMinor || this.patch != this.oldPatch
+             },
+             loadInternal: function () {
+-                $.ajax({ dataType: 'json', url: ig.root + ig.CHANGE_LOG + ig.getCacheSuffix(), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
++                $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.CHANGE_LOG + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
+             },
+             onerror: function (b) {
+                 this.changelog = null
+@@ -39708,7 +39912,7 @@
+                 return b ? g / h : g
+             },
+             loadInternal: function () {
+-                $.ajax({ dataType: 'json', url: ig.root + ig.ITEM_DATABASE + ig.getCacheSuffix(), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
++                $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.ITEM_DATABASE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
+             },
+             onerror: function (b) {
+                 this.items = {}
+@@ -56119,7 +56323,7 @@
+                 ig.SKILL_TREE ? this.parent() : ig.warn("Can't initialize skill tree because ig.SKILL_TREE was not provided")
+             },
+             loadInternal: function () {
+-                $.ajax({ dataType: 'json', url: ig.root + ig.SKILL_TREE + ig.getCacheSuffix(), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
++                $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.SKILL_TREE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
+             },
+             onerror: function (b) {
+                 this._trees = null
+@@ -126774,7 +126978,13 @@
+                 this.parent(b)
+             },
+             loadInternal: function (b) {
+-                $.ajax({ dataType: 'json', url: ig.root + b.toPath('data/credits/', '.json') + ig.getCacheSuffix(), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
++                $.ajax({
++                    dataType: 'json',
++                    url: ig.getFilePath(ig.root + b.toPath('data/credits/', '.json') + ig.getCacheSuffix()),
++                    context: this,
++                    success: this.onload.bind(this),
++                    error: this.onerror.bind(this),
++                })
+             },
+             onerror: function () {
+                 this.data = null
