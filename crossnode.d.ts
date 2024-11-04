@@ -5,5 +5,7 @@ export interface CrossnodeOptions {
     printImageError?: boolean
     skipTitlescreen?: boolean
     autoEnterGame?: boolean
+
+    ccloader2?: boolean
 }
 export function startCrossnode(options: CrossnodeOptions): Promise<void>

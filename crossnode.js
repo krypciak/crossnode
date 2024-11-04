@@ -6,9 +6,18 @@ import jquery from 'jquery'
 import CryptoJS from 'crypto-js'
 import * as readline from 'readline'
 import * as fs from 'fs'
+import * as path from 'path'
+import * as semver from 'semver'
+import * as crypto from 'crypto'
+import * as http from 'http'
+import * as https from 'https'
+import * as dns from 'dns'
+import * as util from 'util'
+import * as events from 'events'
 
 export async function startCrossnode(options) {
-    process.chdir('../../js')
+    process.chdir('../../..')
+
     const dom = new JSDOM(
         `
         <!DOCTYPE html>
@@ -22,12 +31,9 @@ export async function startCrossnode(options) {
         `,
         {
             pretendToBeVisual: true,
-            runScripts: 'dangerously',
-            resources: 'usable',
         }
     )
 
-    // @ts-expect-error
     global.window = dom.window
     global.document = window.document
     global.DOMParser = window.DOMParser
@@ -48,21 +54,97 @@ export async function startCrossnode(options) {
 
     global.localStorage = new LocalStorage('./scratch')
 
-    // @ts-expect-error
     window.Image = global.Image = Image
 
-    // @ts-expect-error
     window.$ = global.$ = jquery(window)
 
     window.CryptoJS = global.CryptoJS = CryptoJS
 
     await import('../../impact/page/js/seedrandom.js')
 
+    window.HTMLElement = global.HTMLElement = function () {}
+    window.name = global.name = ''
+
+    if (true) {
+        window.require = global.require = name => {
+            if (name == 'fs') return fs
+            if (name == 'path') return path
+            if (name == 'crypto') return crypto
+            if (name == 'http') return http
+            if (name == 'https') return https
+            if (name == 'dns') return dns
+            if (name == 'util') return util
+            if (name == 'events') return events
+            if (name == 'nw.gui')
+                return {
+                    Window: {
+                        get() {
+                            return {
+                                isFullscreen: false,
+                                close() {},
+                                enterFullscreen() {},
+                                leaveFullscreen() {},
+                            }
+                        },
+                    },
+                    App: {
+                        dataPath: './GameData',
+                        argv: [],
+                    },
+                }
+            if (name == 'assert') {
+                const func = function (cond) {
+                    if (!cond) throw new Error('assertion failed')
+                }
+                func.ok = func
+                return func
+            }
+            console.error(`\nunknown require() module: "${name}\n`)
+            throw new Error(`unknown require() module: "${name}`)
+        }
+        window.AudioContext = global.AudioContext = class {
+            constructor() {}
+            createGainNode() {
+                return {
+                    gain: { value: 0 },
+                    connect() {},
+                    disconnect() {},
+                }
+            }
+            createGain() {
+                return this.createGainNode()
+            }
+            createDynamicCompressor() {
+                return {}
+            }
+            getDestination() {}
+            createBufferSource() {
+                return {
+                    playbackRate: {},
+                    connect() {},
+                    noteOn() {},
+                }
+            }
+
+            close() {}
+            createMediaElementSource() {}
+            createMediaStreamDestination() {}
+            createMediaStreamSource() {}
+            createMediaStreamTrackSource() {}
+            getOutputTimestamp() {}
+            resume() {}
+            setSinkId() {}
+            suspend() {}
+        }
+
+        process.versions['node-webkit'] = '0.72.0'
+    }
+
     /* Set variables from assets/node-webkit.html */
     {
         window.IG_GAME_SCALE = global.IG_GAME_SCALE = 1
         window.IG_GAME_CACHE = global.IG_GAME_CACHE = ''
-        window.IG_ROOT = global.IG_ROOT = `${process.cwd()}/../`
+        window.IG_ROOT = global.IG_ROOT = `${process.cwd()}/assets/`
         window.IG_WIDTH = global.IG_WIDTH = 568
         window.IG_HEIGHT = global.IG_HEIGHT = 320
         window.IG_HIDE_DEBUG = global.IG_HIDE_DEBUG = false
@@ -82,6 +164,7 @@ export async function startCrossnode(options) {
                     Object.defineProperty(window, name, {
                         writable: true,
                         value: v,
+                        configurable: true,
                     })
                     global[name] = v
                 },
@@ -113,15 +196,24 @@ export async function startCrossnode(options) {
             'checkPlayerPos',
             'testGui',
             'startCrossCode',
+            'activeMods',
+            'inactiveMods',
+            'Plugin',
+            'versions',
+            'Greenworks',
+            'simplifyResources',
+            'isLocal',
+            /* mod specific */
+            'modmanager',
+            'cc',
+            'nax',
+            'entries'
         ]
 
         for (const name of toCapture) {
             captureWindowVar(name)
         }
     }
-
-    window.HTMLElement = global.HTMLElement = function () {}
-    window.name = global.name = ''
 
     /* Create dummy Audio implementation */
     window.Audio = global.Audio = function (_arg) {
@@ -175,27 +267,111 @@ export async function startCrossnode(options) {
         })
 
         rl.on('line', line => {
-            eval(line)
+            try {
+                eval(`console.log(${line})`)
+            } catch (err) {
+                console.log(err)
+            }
         })
 
         rl.once('close', () => {})
     }
 
-    if (options.writeImage) {
-        const inter = options.writeImageInterval ?? 1000 / 10
+    let modloader
+    if (options.ccloader2) {
+        window.isLocal = true
+        window.location = global.location = document.location
+        window.semver = global.semver = semver
 
-        setInterval(() => {
-            if (!(ig && ig.system && ig.system.canvas)) return
-            const canvas = ig.system.canvas
-            fs.writeFileSync('image.png', Buffer.from(canvas.toDataURL().split(',')[1], 'base64'))
-            // console.log('writing')
-        }, inter)
+        await import('./packed.js')
+        const { ModLoader } = await import('../../../ccloader/js/ccloader.js')
+
+        window.caches = global.caches = {
+            async delete() {},
+            async has() {
+                return false
+            },
+            async keys() {
+                return []
+            },
+            async match() {
+                return false
+            },
+            async open() {
+                return {
+                    add() {},
+                    addAll() {},
+                    delete() {},
+                    keys() {
+                        return {}
+                    },
+                    match() {
+                        return false
+                    },
+                    matchAll() {
+                        return false
+                    },
+                    put() {},
+                }
+            },
+        }
+        window.fetch = global.fetch = function (url) {
+            if (!url.startsWith('assets/') && !url.startsWith('/assets/')) {
+                url = 'assets/' + url
+            }
+            url = './' + url
+            return new Promise(async res => {
+                const data = await fs.promises.readFile(url, 'utf8')
+                res({
+                    text() {
+                        return data
+                    },
+                    json() {
+                        return JSON.parse(data)
+                    },
+                })
+            })
+        }
+        modloader = new ModLoader()
+        console.logToFile = function () {}
+        modloader.loader.doc = new DOMParser().parseFromString(
+            `<html>
+                <body>
+                    <div id="status"></div>
+                </body>
+            </html>`,
+            'text/html'
+        )
+
+        await modloader._buildCrosscodeVersion()
+
+        // await this.loader.initialize()
+
+        await modloader._loadModPackages()
+        modloader._removeDuplicateMods()
+        modloader._orderCheckMods()
+        modloader._registerMods()
+
+        modloader._setupGamewindow()
+
+        await modloader._loadPlugins()
+        await modloader._executePreload()
     }
-    const gameCompliedJs = await fs.promises.readFile('./game.compiled.crossnode.js', 'utf8')
+
+    const gameCompliedJs = await fs.promises.readFile('./assets/js/game.compiled.js', 'utf8')
     eval(gameCompliedJs)
+
+    if (options.ccloader2) {
+        // todo: simplify _hookHttpRequest is not executed!
+        await modloader._executePostload()
+        modloader.loader.continue()
+    }
 
     /* Fix resource loading */
     {
+        /* saving it to a variable to it doesnt disappear (it is set to undefined at some point) */
+        let simplifyResources = window.simplifyResources
+        
         ig.getFilePath = function (a) {
             a && (a = a.trim())
             const res = ig.fileForwarding[a] ? ig.fileForwarding[a] : a
@@ -206,10 +382,11 @@ export async function startCrossnode(options) {
                 this.data = new Image()
                 this.data.onload = this.onload.bind(this)
                 this.data.onerror = this.onerror.bind(this)
-                this.data.src = ig.root + this.path + ig.getCacheSuffix()
+                let path = ig.root + this.path + ig.getCacheSuffix()
+                path = simplifyResources._applyAssetOverrides(path)
+                this.data.src = path
             },
             onerror() {
-                // this.loadingFinished(false)
                 if (options.printImageError) {
                     console.log('Image error!', this.data.src)
                 }
@@ -247,21 +424,6 @@ export async function startCrossnode(options) {
                 const b = ig.getFilePath(this._getExtensionFolder())
                 fs.readdir(b, this.onDirRead.bind(this))
                 // ig.platform == ig.PLATFORM_TYPES.DESKTOP ? this.loadExtensionsNWJS() : this.loadExtensionsPHP()
-            },
-            onDirRead: function (a, b) {
-                var c = this._getExtensionFolder(),
-                    e = fs, //window.require('fs'),
-                    f = []
-                if (!a)
-                    for (var g = 0; g < b.length; ++g) {
-                        var h = b[g]
-                        if (h[0] != '.')
-                            if (window.IG_GAME_DEBUG) {
-                                var i = h.indexOf('.json')
-                                i !== -1 && f.push(h.substr(0, i))
-                            } else e.lstatSync(c + h).isDirectory() && e.existsSync(c + h + '/' + h + '.json') && f.push(h)
-                    }
-                this.onExtensionListLoaded(f)
             },
         })
         ig.Database.inject({
@@ -306,6 +468,7 @@ export async function startCrossnode(options) {
             // /* weird */ if (a == '#canvas') return canvas
             return a.charAt(0) == '#' ? document.getElementById(a.substr(1)) : document.getElementsByTagName(a)
         }
+
         ig.MapSoundEntry.inject({
             start() {
                 return
@@ -317,21 +480,20 @@ export async function startCrossnode(options) {
         ig.Sound.enabled = false
         ig.SoundManager.inject({
             init() {
-                this.context = {
-                    getSampleRate() {
-                        return 0
-                    },
-                    getCurrentTimeRaw() {
-                        return 0
-                    },
-                    context: {
-                        state: 'duno',
-                    },
-                }
                 this.format = {
                     ext: 'ogg',
                 }
                 this.parent()
+                this._createWebAudioContext()
+            },
+            loadWebAudio(c, d) {
+                ig.soundManager.buffers[c] = {
+                    duration: 4.366666666666666,
+                    length: 209600,
+                    numberOfChannels: 2,
+                    sampleRate: 48000,
+                }
+                d && d(c, true)
             },
         })
         ig.TrackDefault.inject({
@@ -342,33 +504,51 @@ export async function startCrossnode(options) {
                 return
             },
         })
-        /* Skip title screen */
-        if (options.skipTitlescreen) {
-            sc.TitleScreenGui.inject({
-                init(...args) {
-                    this.parent(...args)
-                    if (true) {
-                        this.introGui.timeLine = [{ time: 0, end: true }]
-                        this.bgGui.parallax.addLoadListener({
-                            onLoadableComplete: () => {
-                                let { timeLine } = this.bgGui
-                                let idx = timeLine.findIndex(item => item.time > 0)
-                                if (idx < 0) idx = timeLine.length
-                                timeLine.splice(idx, 0, { time: 0, goto: 'INTRO_SKIP_NOSOUND' })
-                            },
-                        })
-                        this.removeChildGui(this.startGui)
-                        this.startGui = {
-                            show: () => {
-                                ig.interact.removeEntry(this.screenInteract)
-                                this.buttons.show()
-                            },
-                            hide: () => {},
-                        }
-                    }
-                },
-            })
-        }
     }
-    window.startCrossCode()
+    /* Skip title screen */
+    if (options.skipTitlescreen) {
+        sc.TitleScreenGui.inject({
+            init(...args) {
+                this.parent(...args)
+                if (true) {
+                    this.introGui.timeLine = [{ time: 0, end: true }]
+                    this.bgGui.parallax.addLoadListener({
+                        onLoadableComplete: () => {
+                            let { timeLine } = this.bgGui
+                            let idx = timeLine.findIndex(item => item.time > 0)
+                            if (idx < 0) idx = timeLine.length
+                            timeLine.splice(idx, 0, { time: 0, goto: 'INTRO_SKIP_NOSOUND' })
+                        },
+                    })
+                    this.removeChildGui(this.startGui)
+                    this.startGui = {
+                        show: () => {
+                            ig.interact.removeEntry(this.screenInteract)
+                            this.buttons.show()
+                        },
+                        hide: () => {},
+                    }
+                }
+            },
+        })
+    }
+
+    if (options.writeImage) {
+        const inter = options.writeImageInterval ?? 1000 / 10
+
+        setInterval(() => {
+            if (!(ig && ig.system && ig.system.canvas)) return
+            const canvas = ig.system.canvas
+            fs.writeFileSync('image.png', Buffer.from(canvas.toDataURL().split(',')[1], 'base64'))
+            // console.log('writing')
+        }, inter)
+    }
+
+    await window.startCrossCode()
+
+    if (options.ccloader2) {
+		await modloader._waitForGame();
+        await modloader._executeMain()
+        // modloader._fireLoadEvent()
+    }
 }
