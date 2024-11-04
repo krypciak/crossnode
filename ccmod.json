@@ -1,0 +1,10 @@
+{
+    "id": "crossnode",
+    "version": "1.0.0",
+    "title": "CrossNode",
+    "description": "Helper mod for CrossNode",
+    "repository": "https://github.com/krypciak/crossnode",
+    "tags": ["dev"],
+    "authors": ["krypek"],
+    "plugin": "plugin.js"
+}
