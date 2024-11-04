@@ -16,6 +16,8 @@ import * as util from 'util'
 import * as events from 'events'
 
 export async function startCrossnode(options) {
+    const launchDate = Date.now()
+    
     process.chdir('../../..')
 
     const dom = new JSDOM(
@@ -66,10 +68,28 @@ export async function startCrossnode(options) {
     window.name = global.name = ''
 
     window.crossnode = {
-        options
+        options,
     }
 
     if (true) {
+        function nwGui() {
+            return {
+                Window: {
+                    get() {
+                        return {
+                            isFullscreen: false,
+                            close() {},
+                            enterFullscreen() {},
+                            leaveFullscreen() {},
+                        }
+                    },
+                },
+                App: {
+                    dataPath: './GameData',
+                    argv: [],
+                },
+            }
+        }
         window.require = global.require = name => {
             if (name == 'fs') return fs
             if (name == 'path') return path
@@ -79,23 +99,8 @@ export async function startCrossnode(options) {
             if (name == 'dns') return dns
             if (name == 'util') return util
             if (name == 'events') return events
-            if (name == 'nw.gui')
-                return {
-                    Window: {
-                        get() {
-                            return {
-                                isFullscreen: false,
-                                close() {},
-                                enterFullscreen() {},
-                                leaveFullscreen() {},
-                            }
-                        },
-                    },
-                    App: {
-                        dataPath: './GameData',
-                        argv: [],
-                    },
-                }
+            if (name == 'nw.gui') return nwGui()
+            if (name == './modules/greenworks-nw-0.35/greenworks') return undefined
             if (name == 'assert') {
                 const func = function (cond) {
                     if (!cond) throw new Error('assertion failed')
@@ -103,8 +108,8 @@ export async function startCrossnode(options) {
                 func.ok = func
                 return func
             }
-            console.error(`\nunknown require() module: "${name}\n`)
-            throw new Error(`unknown require() module: "${name}`)
+            console.error(`\nunknown require() module: "${name}"\n`)
+            throw new Error(`unknown require() module: "${name}"`)
         }
         window.AudioContext = global.AudioContext = class {
             constructor() {}
@@ -347,6 +352,9 @@ export async function startCrossnode(options) {
         modloader.loader.continue()
     }
 
+    if (!options.ccloader2) {
+        new (await import('./plugin.js')).default().prestart()
+    }
 
     await window.startCrossCode()
 
@@ -355,4 +363,7 @@ export async function startCrossnode(options) {
         await modloader._executeMain()
         // modloader._fireLoadEvent()
     }
+
+
+    console.log(`Ready (took ${Date.now() - launchDate}ms)`)
 }

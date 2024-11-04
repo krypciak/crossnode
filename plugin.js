@@ -20,7 +20,9 @@ export default class CrossNode {
                     this.data.onload = this.onload.bind(this)
                     this.data.onerror = this.onerror.bind(this)
                     let path = ig.root + this.path + ig.getCacheSuffix()
-                    path = simplifyResources._applyAssetOverrides(path)
+                    if (options.ccloader2) {
+                        path = simplifyResources._applyAssetOverrides(path)
+                    }
                     this.data.src = path
                 },
                 onerror() {
