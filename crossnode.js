@@ -265,7 +265,7 @@ export async function startCrossnode(options) {
         window.location = global.location = document.location
         window.semver = global.semver = semver
 
-        await import('./patched/packed.js')
+        await import('./patched/ccloader-packed.js')
         const { ModLoader } = await import('../../../ccloader/js/ccloader.js')
         const { Filemanager } = await import('../../../ccloader/js/filemanager.js')
         const { Loader } = await import('../../../ccloader/js/loader.js')

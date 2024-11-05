@@ -1,3 +1,5 @@
+/* I only added the last line, nothing else is changed */
+
 const ASSETS_MODS_LENGTH = 13 //'/assets/mods/'.length;
 const CONTENT_TYPES = {
     css: 'text/css',
