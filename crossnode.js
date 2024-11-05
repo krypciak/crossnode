@@ -258,7 +258,7 @@ function injectWaitForGame() {
 }
 
 let modloader
-async function ccloaderInit() {
+async function ccloaderInit(options) {
     window.isLocal = true
     window.location = global.location = document.location
     window.semver = global.semver = semver
@@ -317,21 +317,22 @@ async function ccloaderInit() {
     }
 
     const PatchedModLoader = function () {
-        this._initializeServiceWorker = function () {}
         console.logToFile = function () {}
+        this._initializeServiceWorker = function () {}
 
         this.filemanager = new Filemanager(this)
         this.filemanager.packedFileExists = function () {
             return false
         }
-        const orig = this.filemanager.loadImage
-        this.filemanager.loadImage = function (path) {
-            return orig('./' + path.substring('../'.length))
+        {
+            const orig = this.filemanager.loadImage
+            this.filemanager.loadImage = function (path) {
+                return orig('./' + path.substring('../'.length))
+            }
         }
         this.filemanager._loadScript = async function _loadScript(url, _doc, _type) {
             return import(`../../${url}`)
         }
-
         this.ui = new UI(this)
         this.ui._drawMessage = function (text, _type, _timeout) {
             console.log(`MESSAGE: ${text}`)
@@ -365,6 +366,15 @@ async function ccloaderInit() {
     // await this.loader.initialize()
 
     await modloader._loadModPackages()
+    if (options.modWhitelist) {
+        options.modWhitelist.push('crossnode', 'Simplify')
+        modloader.mods = modloader.mods.filter(mod => options.modWhitelist.includes(mod.name))
+    }
+    console.log(
+        'MODS:',
+        modloader.mods.map(mod => mod.name)
+    )
+
     modloader._removeDuplicateMods()
     modloader._orderCheckMods()
     modloader._registerMods()
@@ -416,7 +426,7 @@ export async function startCrossnode(options) {
 
     if (options.shell) runShell()
 
-    if (options.ccloader2) await ccloaderInit()
+    if (options.ccloader2) await ccloaderInit(options)
 
     await evalGame()
 
@@ -431,7 +441,7 @@ export async function startCrossnode(options) {
     await window.startCrossCode()
 
     await waitForGamePromise
-    
+
     if (options.ccloader2) await ccloaderPoststart()
 
     console.log(`Ready (took ${Date.now() - launchDate}ms)`)

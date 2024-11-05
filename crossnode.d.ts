@@ -7,6 +7,7 @@ export interface CrossnodeOptions {
     autoEnterGame?: boolean
 
     ccloader2?: boolean
+    modWhitelist?: string[]
 
     nukeImageStack?: true
     dontLoadExtensions?: boolean
