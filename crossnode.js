@@ -430,7 +430,6 @@ export async function startCrossnode(options) {
 
     await window.startCrossCode()
 
-
     await waitForGamePromise
     
     if (options.ccloader2) await ccloaderPoststart()

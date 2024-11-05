@@ -9,5 +9,7 @@ export interface CrossnodeOptions {
     ccloader2?: boolean
 
     nukeImageStack?: true
+    dontLoadExtensions?: boolean
+    extensionWhitelist?: string[]
 }
 export function startCrossnode(options: CrossnodeOptions): Promise<void>

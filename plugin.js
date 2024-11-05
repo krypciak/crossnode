@@ -85,7 +85,17 @@ export default class CrossNode {
                 return ig.root + 'extension/'
             },
             loadInternal() {
-                fs.readdir(this._getExtensionFolder(), this.onDirRead.bind(this))
+                if (options.dontLoadExtensions) {
+                    this.onDirRead(true)
+                } else {
+                    fs.readdir(this._getExtensionFolder(), this.onDirRead.bind(this))
+                }
+            },
+            onExtensionListLoaded(list) {
+                if (options.extensionWhitelist) {
+                    list = list.filter(ext => options.extensionWhitelist.includes(ext))
+                }
+                this.parent(list)
             },
         })
         ig.Database.inject({
