@@ -21,7 +21,7 @@ function initDom() {
         <html>
             <body>
                 <div id="game" >
-                    <canvas id="canvas"></canvas>
+                    <canvas id="canvas" width="568" height="320"></canvas>
                 </div>
             </body>
         </html>
