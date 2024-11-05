@@ -23,9 +23,6 @@ importers:
       node-localstorage:
         specifier: ^3.0.5
         version: 3.0.5
-      node-navigator:
-        specifier: ^1.0.1
-        version: 1.0.1
       prettier:
         specifier: ^3.3.3
         version: 3.3.3
@@ -265,9 +262,6 @@ packages:
   node-localstorage@3.0.5:
     resolution: {integrity: sha512-GCwtK33iwVXboZWYcqQHu3aRvXEBwmPkAMRBLeaX86ufhqslyUkLGsi4aW3INEfdQYpUB5M9qtYf3eHvAk2VBg==}
     engines: {node: '>=0.12'}
-
-  node-navigator@1.0.1:
-    resolution: {integrity: sha512-8CWewicTxmE9bbLywi/TIn4QgT8QYikmnNiMIMx+FHTsizZBLcsl4nQUR8zK9DCljwNssjTIaqreVibmhqSvyQ==}
 
   nopt@5.0.0:
     resolution: {integrity: sha512-Tbj67rffqceeLpcRXrT7vKAN8CwfPeIBgM7E6iBkmKLV7bEMwpGgYLGv0jACUsECaa/vuxP0IjEont6umdMgtQ==}
@@ -707,8 +701,6 @@ snapshots:
   node-localstorage@3.0.5:
     dependencies:
       write-file-atomic: 5.0.1
-
-  node-navigator@1.0.1: {}
 
   nopt@5.0.0:
     dependencies:

@@ -1,5 +1,4 @@
 import { JSDOM } from 'jsdom'
-import { Navigator } from 'node-navigator'
 import { LocalStorage } from 'node-localstorage'
 import { Image } from 'canvas'
 import jquery from 'jquery'
@@ -15,11 +14,7 @@ import * as dns from 'dns'
 import * as util from 'util'
 import * as events from 'events'
 
-export async function startCrossnode(options) {
-    const launchDate = Date.now()
-    
-    process.chdir('../../..')
-
+function initDom() {
     const dom = new JSDOM(
         `
         <!DOCTYPE html>
@@ -40,19 +35,10 @@ export async function startCrossnode(options) {
     global.document = window.document
     global.DOMParser = window.DOMParser
     window.process = process
+}
 
-    /* Setup missing libraries */
-    const navigator = new Navigator()
-    Object.defineProperty(global, 'nagivator', {
-        get() {
-            return navigator
-        },
-    })
-    Object.defineProperty(window, 'nagivator', {
-        get() {
-            return navigator
-        },
-    })
+async function initLibs() {
+    global.navigator.appVersion = '4.0'
 
     global.localStorage = new LocalStorage('./scratch')
 
@@ -63,168 +49,162 @@ export async function startCrossnode(options) {
     window.CryptoJS = global.CryptoJS = CryptoJS
 
     await import('../../impact/page/js/seedrandom.js')
+}
 
+function mockNwjs() {
+    function nwGui() {
+        return {
+            Window: {
+                get() {
+                    return {
+                        isFullscreen: false,
+                        close() {},
+                        enterFullscreen() {},
+                        leaveFullscreen() {},
+                    }
+                },
+            },
+            App: {
+                dataPath: './GameData',
+                argv: [],
+            },
+        }
+    }
+    window.require = global.require = function (name) {
+        if (name == 'fs') return fs
+        if (name == 'path') return path
+        if (name == 'crypto') return crypto
+        if (name == 'http') return http
+        if (name == 'https') return https
+        if (name == 'dns') return dns
+        if (name == 'util') return util
+        if (name == 'events') return events
+        if (name == 'nw.gui') return nwGui()
+        if (name == './modules/greenworks-nw-0.35/greenworks') return undefined
+        if (name == 'assert') {
+            const func = function (cond) {
+                if (!cond) throw new Error('assertion failed')
+            }
+            func.ok = func
+            return func
+        }
+        console.error(`\nunknown require() module: "${name}"\n`)
+        throw new Error(`unknown require() module: "${name}"`)
+    }
+    window.AudioContext = global.AudioContext = class {
+        constructor() {}
+        createGainNode() {
+            return {
+                gain: { value: 0 },
+                connect() {},
+                disconnect() {},
+            }
+        }
+        createGain() {
+            return this.createGainNode()
+        }
+        createDynamicCompressor() {
+            return {}
+        }
+        getDestination() {}
+        createBufferSource() {
+            return {
+                playbackRate: {},
+                connect() {},
+                noteOn() {},
+            }
+        }
+
+        close() {}
+        createMediaElementSource() {}
+        createMediaStreamDestination() {}
+        createMediaStreamSource() {}
+        createMediaStreamTrackSource() {}
+        getOutputTimestamp() {}
+        resume() {}
+        setSinkId() {}
+        suspend() {}
+    }
+
+    process.versions['node-webkit'] = '0.72.0'
+}
+
+function setupWindow() {
+    /* Set variables from assets/node-webkit.html */
+    window.IG_GAME_SCALE = global.IG_GAME_SCALE = 1
+    window.IG_GAME_CACHE = global.IG_GAME_CACHE = ''
+    window.IG_ROOT = global.IG_ROOT = `${process.cwd()}/assets/`
+    window.IG_WIDTH = global.IG_WIDTH = 568
+    window.IG_HEIGHT = global.IG_HEIGHT = 320
+    window.IG_HIDE_DEBUG = global.IG_HIDE_DEBUG = false
+    window.IG_SCREEN_MODE_OVERRIDE = global.IG_SCREEN_MODE_OVERRIDE = 2
+    window.IG_WEB_AUDIO_BGM = global.IG_WEB_AUDIO_BGM = false
+    window.IG_FORCE_HTML5_AUDIO = global.IG_FORCE_HTML5_AUDIO = false
+    window.LOAD_LEVEL_ON_GAME_START = global.LOAD_LEVEL_ON_GAME_START = null
+    window.IG_GAME_DEBUG = global.IG_GAME_DEBUG = false
+    window.IG_GAME_BETA = global.IG_GAME_BETA = false
+    /* Capture window variables */
+    function captureWindowVar(name) {
+        Object.defineProperty(window, name, {
+            set(v) {
+                delete window[name]
+                Object.defineProperty(window, name, {
+                    writable: true,
+                    value: v,
+                    configurable: true,
+                })
+                global[name] = v
+            },
+            configurable: true,
+        })
+    }
+    const toCapture = [
+        'sc',
+        'ig',
+        'Vec2',
+        'Vec3',
+        'Line2',
+        'KeySpline',
+        'KEY_SPLINES',
+        'assert',
+        'assertContent',
+        'sc',
+        'Constants',
+        'IG_SOUND_VOLUME',
+        'IG_MUSIC_VOLUME',
+        'IG_USE_WEBAUDIO',
+        'IG_SCREEN_MODE',
+        'MENU_ON_GAME_START',
+        'IG_KEEP_WINDOW_FOCUS',
+        'IG_WEB_AUDIO_BGM',
+        'requestAnimationFrame',
+        'IG_ENTITY_KILL_CALL',
+        'IS_IT_CUBAUM',
+        'checkPlayerPos',
+        'testGui',
+        'startCrossCode',
+        'activeMods',
+        'inactiveMods',
+        'Plugin',
+        'versions',
+        'Greenworks',
+        'simplifyResources',
+        'isLocal',
+        /* mod specific */
+        'modmanager',
+        'cc',
+        'nax',
+        'entries',
+    ]
+
+    for (const name of toCapture) {
+        captureWindowVar(name)
+    }
+}
+
+function mockMisc() {
     window.HTMLElement = global.HTMLElement = function () {}
     window.name = global.name = ''
-
-    window.crossnode = {
-        options,
-    }
-
-    if (true) {
-        function nwGui() {
-            return {
-                Window: {
-                    get() {
-                        return {
-                            isFullscreen: false,
-                            close() {},
-                            enterFullscreen() {},
-                            leaveFullscreen() {},
-                        }
-                    },
-                },
-                App: {
-                    dataPath: './GameData',
-                    argv: [],
-                },
-            }
-        }
-        window.require = global.require = name => {
-            if (name == 'fs') return fs
-            if (name == 'path') return path
-            if (name == 'crypto') return crypto
-            if (name == 'http') return http
-            if (name == 'https') return https
-            if (name == 'dns') return dns
-            if (name == 'util') return util
-            if (name == 'events') return events
-            if (name == 'nw.gui') return nwGui()
-            if (name == './modules/greenworks-nw-0.35/greenworks') return undefined
-            if (name == 'assert') {
-                const func = function (cond) {
-                    if (!cond) throw new Error('assertion failed')
-                }
-                func.ok = func
-                return func
-            }
-            console.error(`\nunknown require() module: "${name}"\n`)
-            throw new Error(`unknown require() module: "${name}"`)
-        }
-        window.AudioContext = global.AudioContext = class {
-            constructor() {}
-            createGainNode() {
-                return {
-                    gain: { value: 0 },
-                    connect() {},
-                    disconnect() {},
-                }
-            }
-            createGain() {
-                return this.createGainNode()
-            }
-            createDynamicCompressor() {
-                return {}
-            }
-            getDestination() {}
-            createBufferSource() {
-                return {
-                    playbackRate: {},
-                    connect() {},
-                    noteOn() {},
-                }
-            }
-
-            close() {}
-            createMediaElementSource() {}
-            createMediaStreamDestination() {}
-            createMediaStreamSource() {}
-            createMediaStreamTrackSource() {}
-            getOutputTimestamp() {}
-            resume() {}
-            setSinkId() {}
-            suspend() {}
-        }
-
-        process.versions['node-webkit'] = '0.72.0'
-    }
-
-    /* Set variables from assets/node-webkit.html */
-    {
-        window.IG_GAME_SCALE = global.IG_GAME_SCALE = 1
-        window.IG_GAME_CACHE = global.IG_GAME_CACHE = ''
-        window.IG_ROOT = global.IG_ROOT = `${process.cwd()}/assets/`
-        window.IG_WIDTH = global.IG_WIDTH = 568
-        window.IG_HEIGHT = global.IG_HEIGHT = 320
-        window.IG_HIDE_DEBUG = global.IG_HIDE_DEBUG = false
-        window.IG_SCREEN_MODE_OVERRIDE = global.IG_SCREEN_MODE_OVERRIDE = 2
-        window.IG_WEB_AUDIO_BGM = global.IG_WEB_AUDIO_BGM = false
-        window.IG_FORCE_HTML5_AUDIO = global.IG_FORCE_HTML5_AUDIO = false
-        window.LOAD_LEVEL_ON_GAME_START = global.LOAD_LEVEL_ON_GAME_START = null
-        window.IG_GAME_DEBUG = global.IG_GAME_DEBUG = false
-        window.IG_GAME_BETA = global.IG_GAME_BETA = false
-    }
-    /* Capture window variables */
-    {
-        function captureWindowVar(name) {
-            Object.defineProperty(window, name, {
-                set(v) {
-                    delete window[name]
-                    Object.defineProperty(window, name, {
-                        writable: true,
-                        value: v,
-                        configurable: true,
-                    })
-                    global[name] = v
-                },
-                configurable: true,
-            })
-        }
-        const toCapture = [
-            'sc',
-            'ig',
-            'Vec2',
-            'Vec3',
-            'Line2',
-            'KeySpline',
-            'KEY_SPLINES',
-            'assert',
-            'assertContent',
-            'sc',
-            'Constants',
-            'IG_SOUND_VOLUME',
-            'IG_MUSIC_VOLUME',
-            'IG_USE_WEBAUDIO',
-            'IG_SCREEN_MODE',
-            'MENU_ON_GAME_START',
-            'IG_KEEP_WINDOW_FOCUS',
-            'IG_WEB_AUDIO_BGM',
-            'requestAnimationFrame',
-            'IG_ENTITY_KILL_CALL',
-            'IS_IT_CUBAUM',
-            'checkPlayerPos',
-            'testGui',
-            'startCrossCode',
-            'activeMods',
-            'inactiveMods',
-            'Plugin',
-            'versions',
-            'Greenworks',
-            'simplifyResources',
-            'isLocal',
-            /* mod specific */
-            'modmanager',
-            'cc',
-            'nax',
-            'entries',
-        ]
-
-        for (const name of toCapture) {
-            captureWindowVar(name)
-        }
-    }
-
-    /* Create dummy Audio implementation */
     window.Audio = global.Audio = function (_arg) {
         return {
             addEventListener(type, listener) {
@@ -243,24 +223,41 @@ export async function startCrossnode(options) {
             },
         }
     }
+}
 
-    if (options.shell) {
-        const rl = readline.createInterface({
-            input: process.stdin,
-            output: process.stdout,
-            terminal: false,
-        })
+function runShell() {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+        terminal: false,
+    })
 
-        rl.on('line', line => {
-            try {
-                eval(`console.log(${line})`)
-            } catch (err) {
-                console.log(err)
-            }
-        })
+    rl.on('line', line => {
+        try {
+            eval(`console.log(${line})`)
+        } catch (err) {
+            console.log(err)
+        }
+    })
 
-        rl.once('close', () => {})
+    rl.once('close', () => {})
+}
+
+export async function startCrossnode(options) {
+    const launchDate = Date.now()
+
+    process.chdir('../../..')
+    initDom()
+    await initLibs()
+
+    window.crossnode = {
+        options,
     }
+    mockNwjs()
+    setupWindow()
+    mockMisc()
+
+    if (options.shell) runShell()
 
     let modloader
     if (options.ccloader2) {
@@ -268,8 +265,11 @@ export async function startCrossnode(options) {
         window.location = global.location = document.location
         window.semver = global.semver = semver
 
-        await import('./packed.js')
+        await import('./patched/packed.js')
         const { ModLoader } = await import('../../../ccloader/js/ccloader.js')
+        const { Filemanager } = await import('../../../ccloader/js/filemanager.js')
+        const { Loader } = await import('../../../ccloader/js/loader.js')
+        const { UI } = await import('../../../ccloader/js/ui.js')
 
         window.caches = global.caches = {
             async delete() {},
@@ -317,16 +317,50 @@ export async function startCrossnode(options) {
                 })
             })
         }
-        modloader = new ModLoader()
-        console.logToFile = function () {}
-        modloader.loader.doc = new DOMParser().parseFromString(
-            `<html>
+
+        const PatchedModLoader = function () {
+            this._initializeServiceWorker = function () {}
+            console.logToFile = function () {}
+
+            this.filemanager = new Filemanager(this)
+            this.filemanager.packedFileExists = function () {
+                return false
+            }
+            const orig = this.filemanager.loadImage
+            this.filemanager.loadImage = function (path) {
+                return orig('./' + path.substring('../'.length))
+            }
+            this.filemanager._loadScript = async function _loadScript(url, _doc, _type) {
+                return import(`../../${url}`)
+            }
+
+            this.ui = new UI(this)
+            this.ui._drawMessage = function (text, _type, _timeout) {
+                console.log(`MESSAGE: ${text}`)
+            }
+            this.loader = new Loader(this.filemanager)
+            this.loader.doc = new DOMParser().parseFromString(
+                `<html>
                 <body>
                     <div id="status"></div>
                 </body>
             </html>`,
-            'text/html'
-        )
+                'text/html'
+            )
+
+            this.overlay = document.getElementById('overlay')
+            this.status = document.getElementById('status')
+
+            /** @type {Mod[]} */
+            this.mods = []
+            /** @type {{[name: string]: string}} */
+            this.versions = {}
+            /** @type {string[]} */
+            this.extensions = this.filemanager.getExtensions()
+        }
+        PatchedModLoader.prototype = ModLoader.prototype
+
+        modloader = new PatchedModLoader()
 
         await modloader._buildCrosscodeVersion()
 
@@ -340,6 +374,16 @@ export async function startCrossnode(options) {
         modloader._setupGamewindow()
 
         await modloader._loadPlugins()
+
+        const Simplify = modloader.mods.find(m => m.name == 'Simplify').pluginInstance
+        /* prevent pattern-fix.js#fixPatters from running */
+        Simplify.prestart = undefined
+        Simplify.postload = function () {
+            this._applyArgs()
+            /* use a modified version of postloadModule.js */
+            return import('./patched/simplify-postloadModule.js')
+        }
+
         await modloader._executePreload()
     }
 
@@ -363,7 +407,6 @@ export async function startCrossnode(options) {
         await modloader._executeMain()
         // modloader._fireLoadEvent()
     }
-
 
     console.log(`Ready (took ${Date.now() - launchDate}ms)`)
 }
