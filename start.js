@@ -1,3 +1,3 @@
 #!/bin/node
 import { startCrossnode } from './crossnode.js'
-startCrossnode({ shell: true, ccloader2: true, autoEnterGame: true, writeImage: true })
+startCrossnode({ nukeImageStack: true, ccloader2: true })

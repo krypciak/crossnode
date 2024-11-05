@@ -7,5 +7,7 @@ export interface CrossnodeOptions {
     autoEnterGame?: boolean
 
     ccloader2?: boolean
+
+    nukeImageStack?: true
 }
 export function startCrossnode(options: CrossnodeOptions): Promise<void>

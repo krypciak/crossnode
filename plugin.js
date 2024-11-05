@@ -5,145 +5,165 @@ export default class CrossNode {
         const { options } = window.crossnode
 
         /* Fix resource loading */
-        {
-            /* saving it to a variable to it doesnt disappear (it is set to undefined at some point) */
-            let simplifyResources = window.simplifyResources
+        /* saving it to a variable to it doesnt disappear (it is set to undefined at some point) */
+        let simplifyResources = window.simplifyResources
 
-            ig.getFilePath = function (a) {
-                a && (a = a.trim())
-                const res = ig.fileForwarding[a] ? ig.fileForwarding[a] : a
-                return `file://${res}`
-            }
-            ig.Image.inject({
-                loadInternal() {
-                    this.data = new Image()
-                    this.data.onload = this.onload.bind(this)
-                    this.data.onerror = this.onerror.bind(this)
-                    let path = ig.root + this.path + ig.getCacheSuffix()
-                    if (options.ccloader2) {
-                        path = simplifyResources._applyAssetOverrides(path)
-                    }
-                    this.data.src = path
-                },
-                onerror() {
-                    if (options.printImageError) {
-                        console.log('Image error!', this.data.src)
-                    }
-                    this.data = new Image()
-                    this.onload()
-                },
+        ig.getFilePath = function (a) {
+            a && (a = a.trim())
+            const res = ig.fileForwarding[a] ? ig.fileForwarding[a] : a
+            return `file://${res}`
+        }
+
+        if (options.nukeImageStack) {
+            ig.perf.draw = false
+            ig.ImagePattern.inject({
+                initBuffer() {},
             })
-            ig.Lang.inject({
-                loadInternal() {
-                    for (var a = 0; a < ig.langFileList.length; ++a) {
-                        var b = ig.root + ig.langFileList[a].toPath('data/lang/', '.' + ig.currentLang + '.json')
-                        $.ajax({ dataType: 'json', url: ig.getFilePath(b + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
-                    }
-                    this._doCallback()
-                },
+            ig.Font.inject({
+                _loadMetrics() {},
             })
-            ig.GlobalSettings.inject({
-                loadInternal: function () {
-                    $.ajax({
-                        dataType: 'json',
-                        url: ig.getFilePath(ig.root + 'data/global-settings.json' + ig.getCacheSuffix()),
-                        context: this,
-                        success: this.onload.bind(this),
-                        error: this.onerror.bind(this),
-                    })
-                },
-            })
-            ig.TileInfoList.inject({
-                loadInternal() {
-                    $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.TILEINFO_FILE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
-                },
-            })
-            ig.ExtensionList.inject({
-                loadInternal() {
-                    const b = ig.getFilePath(this._getExtensionFolder())
-                    fs.readdir(b, this.onDirRead.bind(this))
-                    // ig.platform == ig.PLATFORM_TYPES.DESKTOP ? this.loadExtensionsNWJS() : this.loadExtensionsPHP()
-                },
-            })
-            ig.Database.inject({
-                loadInternal() {
-                    $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.DATABASE_FILE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
-                },
-            })
-            ig.Terrain.inject({
-                loadInternal() {
-                    $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.TERRAIN_FILE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
-                },
-            })
-            sc.VerionChangeLog.inject({
-                loadInternal() {
-                    $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.CHANGE_LOG + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
-                },
-            })
-            sc.Inventory.inject({
-                loadInternal() {
-                    $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.ITEM_DATABASE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
-                },
-            })
-            sc.SkillTree.inject({
-                loadInternal() {
-                    $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.SKILL_TREE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
-                },
-            })
-            sc.CreditSectionLoadable.inject({
-                loadInternal() {
-                    $.ajax({
-                        dataType: 'json',
-                        url: ig.getFilePath(ig.root + b.toPath('data/credits/', '.json') + ig.getCacheSuffix()),
-                        context: this,
-                        success: this.onload.bind(this),
-                        error: this.onerror.bind(this),
-                    })
-                },
+            ig.NinePatch.inject({
+                draw() {},
+                drawComposite() {},
             })
         }
-        {
-            ig.$ = function (a) {
-                // /* weird */ if (a == '#canvas') return canvas
-                return a.charAt(0) == '#' ? document.getElementById(a.substr(1)) : document.getElementsByTagName(a)
-            }
 
-            ig.MapSoundEntry.inject({
-                start() {
+        ig.Image.inject({
+            loadInternal() {
+                if (options.nukeImageStack) {
+                    this.data = new Image()
+                    this.width = 0
+                    this.height = 0
+                    this.loadingFinished(true)
                     return
-                },
-                stop() {
-                    return
-                },
-            })
-            ig.Sound.enabled = false
-            ig.SoundManager.inject({
-                init() {
-                    this.format = {
-                        ext: 'ogg',
-                    }
-                    this.parent()
-                    this._createWebAudioContext()
-                },
-                loadWebAudio(c, d) {
-                    ig.soundManager.buffers[c] = {
-                        duration: 4.366666666666666,
-                        length: 209600,
-                        numberOfChannels: 2,
-                        sampleRate: 48000,
-                    }
-                    d && d(c, true)
-                },
-            })
-            ig.TrackDefault.inject({
-                play() {
-                    return
-                },
-                pause() {
-                    return
-                },
-            })
+                }
+                this.data = new Image()
+                this.data.onload = this.onload.bind(this)
+                this.data.onerror = this.onerror.bind(this)
+
+                let path = ig.root + this.path + ig.getCacheSuffix()
+                if (options.ccloader2) {
+                    path = simplifyResources._applyAssetOverrides(path)
+                }
+                this.data.src = path
+            },
+            onerror() {
+                if (options.printImageError) {
+                    console.log('Image error!', this.data.src)
+                }
+                this.data = new Image()
+                this.onload()
+            },
+        })
+        ig.Lang.inject({
+            loadInternal() {
+                for (var a = 0; a < ig.langFileList.length; ++a) {
+                    var b = ig.root + ig.langFileList[a].toPath('data/lang/', '.' + ig.currentLang + '.json')
+                    $.ajax({ dataType: 'json', url: ig.getFilePath(b + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
+                }
+                this._doCallback()
+            },
+        })
+        ig.GlobalSettings.inject({
+            loadInternal: function () {
+                $.ajax({
+                    dataType: 'json',
+                    url: ig.getFilePath(ig.root + 'data/global-settings.json' + ig.getCacheSuffix()),
+                    context: this,
+                    success: this.onload.bind(this),
+                    error: this.onerror.bind(this),
+                })
+            },
+        })
+        ig.TileInfoList.inject({
+            loadInternal() {
+                $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.TILEINFO_FILE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
+            },
+        })
+        ig.ExtensionList.inject({
+            loadInternal() {
+                const b = ig.getFilePath(this._getExtensionFolder())
+                fs.readdir(b, this.onDirRead.bind(this))
+                // ig.platform == ig.PLATFORM_TYPES.DESKTOP ? this.loadExtensionsNWJS() : this.loadExtensionsPHP()
+            },
+        })
+        ig.Database.inject({
+            loadInternal() {
+                $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.DATABASE_FILE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
+            },
+        })
+        ig.Terrain.inject({
+            loadInternal() {
+                $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.TERRAIN_FILE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
+            },
+        })
+        sc.VerionChangeLog.inject({
+            loadInternal() {
+                $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.CHANGE_LOG + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
+            },
+        })
+        sc.Inventory.inject({
+            loadInternal() {
+                $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.ITEM_DATABASE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
+            },
+        })
+        sc.SkillTree.inject({
+            loadInternal() {
+                $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.SKILL_TREE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
+            },
+        })
+        sc.CreditSectionLoadable.inject({
+            loadInternal() {
+                $.ajax({
+                    dataType: 'json',
+                    url: ig.getFilePath(ig.root + b.toPath('data/credits/', '.json') + ig.getCacheSuffix()),
+                    context: this,
+                    success: this.onload.bind(this),
+                    error: this.onerror.bind(this),
+                })
+            },
+        })
+
+        ig.$ = function (a) {
+            // /* weird */ if (a == '#canvas') return canvas
+            return a.charAt(0) == '#' ? document.getElementById(a.substr(1)) : document.getElementsByTagName(a)
         }
+
+        ig.MapSoundEntry.inject({
+            start() {
+                return
+            },
+            stop() {
+                return
+            },
+        })
+        ig.Sound.enabled = false
+        ig.SoundManager.inject({
+            init() {
+                this.format = {
+                    ext: 'ogg',
+                }
+                this.parent()
+                this._createWebAudioContext()
+            },
+            loadWebAudio(c, d) {
+                ig.soundManager.buffers[c] = {
+                    duration: 4.366666666666666,
+                    length: 209600,
+                    numberOfChannels: 2,
+                    sampleRate: 48000,
+                }
+                d && d(c, true)
+            },
+        })
+        ig.TrackDefault.inject({
+            play() {
+                return
+            },
+            pause() {
+                return
+            },
+        })
 
         if (options.autoEnterGame) {
             options.skipTitlescreen = true
