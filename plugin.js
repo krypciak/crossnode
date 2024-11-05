@@ -138,6 +138,12 @@ export default class CrossNode {
             },
         })
         ig.Sound.enabled = false
+        const emptySoundEntry  = {
+            duration: 4.366666666666666,
+            length: 209600,
+            numberOfChannels: 2,
+            sampleRate: 48000,
+        }
         ig.SoundManager.inject({
             init() {
                 this.format = {
@@ -147,12 +153,7 @@ export default class CrossNode {
                 this._createWebAudioContext()
             },
             loadWebAudio(c, d) {
-                ig.soundManager.buffers[c] = {
-                    duration: 4.366666666666666,
-                    length: 209600,
-                    numberOfChannels: 2,
-                    sampleRate: 48000,
-                }
+                ig.soundManager.buffers[c] = emptySoundEntry 
                 d && d(c, true)
             },
         })

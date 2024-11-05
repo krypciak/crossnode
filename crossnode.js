@@ -243,14 +243,17 @@ function runShell() {
     rl.once('close', () => {})
 }
 
-async function waitForGame() {
-    return new Promise(res => {
-        const intervalid = setInterval(() => {
-            if (ig && ig.ready) {
-                clearInterval(intervalid)
-                res()
+let waitForGameResolve
+const waitForGamePromise = new Promise(res => (waitForGameResolve = res))
+function injectWaitForGame() {
+    ig.Loader.inject({
+        finalize() {
+            let end = ig.resources.length > 0
+            this.parent()
+            if (end && ig.ready) {
+                waitForGameResolve()
             }
-        }, 100)
+        },
     })
 }
 
@@ -392,7 +395,13 @@ async function ccloaderPoststart() {
     // modloader._fireLoadEvent()
 }
 
+async function evalGame() {
+    const gameCompliedJs = await fs.promises.readFile('./assets/js/game.compiled.js', 'utf8')
+    eval(gameCompliedJs)
+}
+
 export async function startCrossnode(options) {
+    debugger
     const launchDate = Date.now()
 
     process.chdir('../../..')
@@ -410,8 +419,7 @@ export async function startCrossnode(options) {
 
     if (options.ccloader2) await ccloaderInit()
 
-    const gameCompliedJs = await fs.promises.readFile('./assets/js/game.compiled.js', 'utf8')
-    eval(gameCompliedJs)
+    await evalGame()
 
     if (options.ccloader2) await ccloaderPostload()
 
@@ -419,9 +427,13 @@ export async function startCrossnode(options) {
         new (await import('./plugin.js')).default().prestart()
     }
 
+    injectWaitForGame()
+
     await window.startCrossCode()
 
-    await waitForGame()
+
+    await waitForGamePromise
+    
     if (options.ccloader2) await ccloaderPoststart()
 
     console.log(`Ready (took ${Date.now() - launchDate}ms)`)
