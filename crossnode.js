@@ -401,7 +401,6 @@ async function evalGame() {
 }
 
 export async function startCrossnode(options) {
-    debugger
     const launchDate = Date.now()
 
     process.chdir('../../..')

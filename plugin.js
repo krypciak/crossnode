@@ -81,10 +81,11 @@ export default class CrossNode {
             },
         })
         ig.ExtensionList.inject({
+            _getExtensionFolder() {
+                return ig.root + 'extension/'
+            },
             loadInternal() {
-                const b = ig.getFilePath(this._getExtensionFolder())
-                fs.readdir(b, this.onDirRead.bind(this))
-                // ig.platform == ig.PLATFORM_TYPES.DESKTOP ? this.loadExtensionsNWJS() : this.loadExtensionsPHP()
+                fs.readdir(this._getExtensionFolder(), this.onDirRead.bind(this))
             },
         })
         ig.Database.inject({
@@ -138,7 +139,7 @@ export default class CrossNode {
             },
         })
         ig.Sound.enabled = false
-        const emptySoundEntry  = {
+        const emptySoundEntry = {
             duration: 4.366666666666666,
             length: 209600,
             numberOfChannels: 2,
@@ -153,7 +154,7 @@ export default class CrossNode {
                 this._createWebAudioContext()
             },
             loadWebAudio(c, d) {
-                ig.soundManager.buffers[c] = emptySoundEntry 
+                ig.soundManager.buffers[c] = emptySoundEntry
                 d && d(c, true)
             },
         })
