@@ -243,6 +243,145 @@ function runShell() {
     rl.once('close', () => {})
 }
 
+let modloader
+async function ccloaderInit() {
+    window.isLocal = true
+    window.location = global.location = document.location
+    window.semver = global.semver = semver
+
+    await import('./patched/ccloader-packed.js')
+    const { ModLoader } = await import('../../../ccloader/js/ccloader.js')
+    const { Filemanager } = await import('../../../ccloader/js/filemanager.js')
+    const { Loader } = await import('../../../ccloader/js/loader.js')
+    const { UI } = await import('../../../ccloader/js/ui.js')
+
+    window.caches = global.caches = {
+        async delete() {},
+        async has() {
+            return false
+        },
+        async keys() {
+            return []
+        },
+        async match() {
+            return false
+        },
+        async open() {
+            return {
+                add() {},
+                addAll() {},
+                delete() {},
+                keys() {
+                    return {}
+                },
+                match() {
+                    return false
+                },
+                matchAll() {
+                    return false
+                },
+                put() {},
+            }
+        },
+    }
+    window.fetch = global.fetch = function (url) {
+        if (!url.startsWith('assets/') && !url.startsWith('/assets/')) {
+            url = 'assets/' + url
+        }
+        url = './' + url
+        return new Promise(async res => {
+            const data = await fs.promises.readFile(url, 'utf8')
+            res({
+                text() {
+                    return data
+                },
+                json() {
+                    return JSON.parse(data)
+                },
+            })
+        })
+    }
+
+    const PatchedModLoader = function () {
+        this._initializeServiceWorker = function () {}
+        console.logToFile = function () {}
+
+        this.filemanager = new Filemanager(this)
+        this.filemanager.packedFileExists = function () {
+            return false
+        }
+        const orig = this.filemanager.loadImage
+        this.filemanager.loadImage = function (path) {
+            return orig('./' + path.substring('../'.length))
+        }
+        this.filemanager._loadScript = async function _loadScript(url, _doc, _type) {
+            return import(`../../${url}`)
+        }
+
+        this.ui = new UI(this)
+        this.ui._drawMessage = function (text, _type, _timeout) {
+            console.log(`MESSAGE: ${text}`)
+        }
+        this.loader = new Loader(this.filemanager)
+        this.loader.doc = new DOMParser().parseFromString(
+            `<html>
+                <body>
+                    <div id="status"></div>
+                </body>
+            </html>`,
+            'text/html'
+        )
+
+        this.overlay = document.getElementById('overlay')
+        this.status = document.getElementById('status')
+
+        /** @type {Mod[]} */
+        this.mods = []
+        /** @type {{[name: string]: string}} */
+        this.versions = {}
+        /** @type {string[]} */
+        this.extensions = this.filemanager.getExtensions()
+    }
+    PatchedModLoader.prototype = ModLoader.prototype
+
+    modloader = new PatchedModLoader()
+
+    await modloader._buildCrosscodeVersion()
+
+    // await this.loader.initialize()
+
+    await modloader._loadModPackages()
+    modloader._removeDuplicateMods()
+    modloader._orderCheckMods()
+    modloader._registerMods()
+
+    modloader._setupGamewindow()
+
+    await modloader._loadPlugins()
+
+    const Simplify = modloader.mods.find(m => m.name == 'Simplify').pluginInstance
+    /* prevent pattern-fix.js#fixPatters from running */
+    Simplify.prestart = undefined
+    Simplify.postload = function () {
+        this._applyArgs()
+        /* use a modified version of postloadModule.js */
+        return import('./patched/simplify-postloadModule.js')
+    }
+
+    await modloader._executePreload()
+}
+
+async function ccloaderPostload() {
+    await modloader._executePostload()
+    modloader.loader.continue()
+}
+
+async function ccloaderPoststart() {
+    await modloader._waitForGame()
+    await modloader._executeMain()
+    // modloader._fireLoadEvent()
+}
+
 export async function startCrossnode(options) {
     const launchDate = Date.now()
 
@@ -259,142 +398,12 @@ export async function startCrossnode(options) {
 
     if (options.shell) runShell()
 
-    let modloader
-    if (options.ccloader2) {
-        window.isLocal = true
-        window.location = global.location = document.location
-        window.semver = global.semver = semver
-
-        await import('./patched/ccloader-packed.js')
-        const { ModLoader } = await import('../../../ccloader/js/ccloader.js')
-        const { Filemanager } = await import('../../../ccloader/js/filemanager.js')
-        const { Loader } = await import('../../../ccloader/js/loader.js')
-        const { UI } = await import('../../../ccloader/js/ui.js')
-
-        window.caches = global.caches = {
-            async delete() {},
-            async has() {
-                return false
-            },
-            async keys() {
-                return []
-            },
-            async match() {
-                return false
-            },
-            async open() {
-                return {
-                    add() {},
-                    addAll() {},
-                    delete() {},
-                    keys() {
-                        return {}
-                    },
-                    match() {
-                        return false
-                    },
-                    matchAll() {
-                        return false
-                    },
-                    put() {},
-                }
-            },
-        }
-        window.fetch = global.fetch = function (url) {
-            if (!url.startsWith('assets/') && !url.startsWith('/assets/')) {
-                url = 'assets/' + url
-            }
-            url = './' + url
-            return new Promise(async res => {
-                const data = await fs.promises.readFile(url, 'utf8')
-                res({
-                    text() {
-                        return data
-                    },
-                    json() {
-                        return JSON.parse(data)
-                    },
-                })
-            })
-        }
-
-        const PatchedModLoader = function () {
-            this._initializeServiceWorker = function () {}
-            console.logToFile = function () {}
-
-            this.filemanager = new Filemanager(this)
-            this.filemanager.packedFileExists = function () {
-                return false
-            }
-            const orig = this.filemanager.loadImage
-            this.filemanager.loadImage = function (path) {
-                return orig('./' + path.substring('../'.length))
-            }
-            this.filemanager._loadScript = async function _loadScript(url, _doc, _type) {
-                return import(`../../${url}`)
-            }
-
-            this.ui = new UI(this)
-            this.ui._drawMessage = function (text, _type, _timeout) {
-                console.log(`MESSAGE: ${text}`)
-            }
-            this.loader = new Loader(this.filemanager)
-            this.loader.doc = new DOMParser().parseFromString(
-                `<html>
-                <body>
-                    <div id="status"></div>
-                </body>
-            </html>`,
-                'text/html'
-            )
-
-            this.overlay = document.getElementById('overlay')
-            this.status = document.getElementById('status')
-
-            /** @type {Mod[]} */
-            this.mods = []
-            /** @type {{[name: string]: string}} */
-            this.versions = {}
-            /** @type {string[]} */
-            this.extensions = this.filemanager.getExtensions()
-        }
-        PatchedModLoader.prototype = ModLoader.prototype
-
-        modloader = new PatchedModLoader()
-
-        await modloader._buildCrosscodeVersion()
-
-        // await this.loader.initialize()
-
-        await modloader._loadModPackages()
-        modloader._removeDuplicateMods()
-        modloader._orderCheckMods()
-        modloader._registerMods()
-
-        modloader._setupGamewindow()
-
-        await modloader._loadPlugins()
-
-        const Simplify = modloader.mods.find(m => m.name == 'Simplify').pluginInstance
-        /* prevent pattern-fix.js#fixPatters from running */
-        Simplify.prestart = undefined
-        Simplify.postload = function () {
-            this._applyArgs()
-            /* use a modified version of postloadModule.js */
-            return import('./patched/simplify-postloadModule.js')
-        }
-
-        await modloader._executePreload()
-    }
+    if (options.ccloader2) await ccloaderInit()
 
     const gameCompliedJs = await fs.promises.readFile('./assets/js/game.compiled.js', 'utf8')
     eval(gameCompliedJs)
 
-    if (options.ccloader2) {
-        // todo: simplify _hookHttpRequest is not executed!
-        await modloader._executePostload()
-        modloader.loader.continue()
-    }
+    if (options.ccloader2) await ccloaderPostload()
 
     if (!options.ccloader2) {
         new (await import('./plugin.js')).default().prestart()
@@ -402,11 +411,7 @@ export async function startCrossnode(options) {
 
     await window.startCrossCode()
 
-    if (options.ccloader2) {
-        await modloader._waitForGame()
-        await modloader._executeMain()
-        // modloader._fireLoadEvent()
-    }
+    if (options.ccloader2) await ccloaderPoststart()
 
     console.log(`Ready (took ${Date.now() - launchDate}ms)`)
 }
