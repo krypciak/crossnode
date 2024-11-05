@@ -243,6 +243,17 @@ function runShell() {
     rl.once('close', () => {})
 }
 
+async function waitForGame() {
+    return new Promise(res => {
+        const intervalid = setInterval(() => {
+            if (ig && ig.ready) {
+                clearInterval(intervalid)
+                res()
+            }
+        }, 100)
+    })
+}
+
 let modloader
 async function ccloaderInit() {
     window.isLocal = true
@@ -377,7 +388,6 @@ async function ccloaderPostload() {
 }
 
 async function ccloaderPoststart() {
-    await modloader._waitForGame()
     await modloader._executeMain()
     // modloader._fireLoadEvent()
 }
@@ -411,6 +421,7 @@ export async function startCrossnode(options) {
 
     await window.startCrossCode()
 
+    await waitForGame()
     if (options.ccloader2) await ccloaderPoststart()
 
     console.log(`Ready (took ${Date.now() - launchDate}ms)`)
