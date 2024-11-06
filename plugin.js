@@ -1,7 +1,17 @@
 const fs = require('fs')
+import { initTestApi } from './tester.js'
 export default class CrossNode {
+    preload() {
+        if (!window.crossnode) return
+
+        if (window.crossnode.options.test) {
+            initTestApi()
+        }
+    }
+
     prestart() {
         if (!window.crossnode) return
+
         const { options } = window.crossnode
 
         /* Fix resource loading */
@@ -238,6 +248,40 @@ export default class CrossNode {
                 fs.writeFileSync('image.png', Buffer.from(canvas.toDataURL().split(',')[1], 'base64'))
                 // console.log('writing')
             }, inter)
+        }
+
+        if (options.test) {
+            let finishFunc
+            window.crossnode.registerTest({
+                fps: 60,
+                skipFrameWait: true,
+                timeoutSeconds: 3,
+
+                name: 'hello world!',
+                async setup(finish) {
+                    finishFunc = finish
+                },
+                update(frame) {
+                    if (frame >= 100) {
+                        finishFunc(true)
+                    }
+                },
+            })
+            window.crossnode.registerTest({
+                fps: 60,
+                skipFrameWait: false,
+                timeoutSeconds: 3,
+
+                name: 'obama world!',
+                async setup(finish) {
+                    finishFunc = finish
+                },
+                update(frame) {
+                    if (frame >= 1000) {
+                        finishFunc(true)
+                    }
+                },
+            })
         }
     }
 }

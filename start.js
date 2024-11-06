@@ -1,3 +1,3 @@
 #!/bin/node
 import { startCrossnode } from './crossnode.js'
-startCrossnode({ shell: true, writeImage: true })
+startCrossnode({ shell: true, writeImage: true, test: true })

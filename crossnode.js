@@ -244,7 +244,6 @@ function runShell() {
 }
 
 let waitForGameResolve
-const waitForGamePromise = new Promise(res => (waitForGameResolve = res))
 function injectWaitForGame() {
     ig.Loader.inject({
         finalize() {
@@ -419,6 +418,7 @@ export async function startCrossnode(options) {
 
     window.crossnode = {
         options,
+        waitForGamePromise: new Promise(res => (waitForGameResolve = res)),
     }
     mockNwjs()
     setupWindow()
@@ -428,7 +428,13 @@ export async function startCrossnode(options) {
 
     if (options.ccloader2) await ccloaderInit(options)
 
+    if (!options.ccloader2) {
+        new (await import('./plugin.js')).default().preload()
+    }
+
     await evalGame()
+
+    injectWaitForGame()
 
     if (options.ccloader2) await ccloaderPostload()
 
@@ -436,11 +442,9 @@ export async function startCrossnode(options) {
         new (await import('./plugin.js')).default().prestart()
     }
 
-    injectWaitForGame()
-
     await window.startCrossCode()
 
-    await waitForGamePromise
+    await window.crossnode.waitForGamePromise
 
     if (options.ccloader2) await ccloaderPoststart()
 
