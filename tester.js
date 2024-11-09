@@ -65,6 +65,43 @@ function initTestRunner() {
         }
     }
 
+    let waitForGameResolve
+    ig.Loader.inject({
+        finalize() {
+            let end = ig.resources.length > 0
+            this.parent()
+            if (end && ig.ready && waitForGameResolve) {
+                waitForGameResolve()
+            }
+        },
+    })
+    window.crossnode.testUtil = {
+        async loadLevel(levelName, marker, hint) {
+            await new Promise(res => {
+                const backup = $.ajax
+                $.ajax = function (opts) {
+                    opts.success = data => {
+                        ig.game.teleporting.levelData = data
+                        res()
+                    }
+                    backup(opts)
+                }
+                ig.game.teleport(levelName, marker, hint)
+                $.ajax = backup
+            })
+
+            const promise2 = new Promise(res => (waitForGameResolve = res))
+
+            ig.game.loadLevel(ig.game.teleporting.levelData, ig.game.teleporting.clearCache, ig.game.teleporting.reloadCache)
+            ig.game.teleporting.levelData = null
+            ig.game.teleporting.clearCache = false
+            ig.game.teleporting.timer = 0
+            ig.game.onTeleportEnd()
+
+            await promise2
+        },
+    }
+
     ig.system.stopRunLoop()
     tests.sort((a, b) => a.name.localeCompare(b.name))
 
@@ -80,6 +117,9 @@ async function nextTest() {
     if (!test) return allTestsDone()
 
     await test.setup(testDone)
+    if (window.determinism && test.seed) {
+        window.determinism.setSeed(test.seed)
+    }
 
     const fps = test.fps ?? options.fps ?? 60
     testFrameLimit = (test.timeoutSeconds ?? 5) * fps

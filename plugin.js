@@ -1,18 +1,38 @@
 const fs = require('fs')
 import { initTestApi } from './tester.js'
+import { initDeterminism } from './determinism.js'
+
 export default class CrossNode {
     preload() {
         if (!window.crossnode) return
+        const { options } = window.crossnode
 
-        if (window.crossnode.options.test) {
+        if (options.test) {
             initTestApi()
         }
+
+        /* mute the "INIT FULLSCREEN VALUE true" text */
+        localStorage.setItem('IG_FULLSCREEN', '')
     }
 
     prestart() {
         if (!window.crossnode) return
 
         const { options } = window.crossnode
+        if (options.determinism) {
+            initDeterminism()
+        }
+
+        if (options.quiet) {
+            ig.ExtensionList.inject({
+                onExtensionListLoaded(...args) {
+                    const back = console.log
+                    console.log = function () {}
+                    this.parent(...args)
+                    console.log = back
+                },
+            })
+        }
 
         /* Fix resource loading */
         /* saving it to a variable to it doesnt disappear (it is set to undefined at some point) */
@@ -255,29 +275,23 @@ export default class CrossNode {
             window.crossnode.registerTest({
                 fps: 60,
                 skipFrameWait: true,
-                timeoutSeconds: 3,
+                timeoutSeconds: 1000e3,
 
-                name: 'hello world!',
-                async setup(finish) {
-                    finishFunc = finish
-                },
-                update(frame) {
-                    if (frame >= 100) {
-                        finishFunc(true)
-                    }
-                },
-            })
-            window.crossnode.registerTest({
-                fps: 60,
-                skipFrameWait: false,
-                timeoutSeconds: 3,
-
+                seed: 'welcome to hell',
                 name: 'obama world!',
                 async setup(finish) {
+                    ig.bgm.clear('MEDIUM_OUT')
+                    ig.interact.entries.forEach(e => ig.interact.removeEntry(e))
+                    ig.game.start(sc.START_MODE.NEW_GAME_PLUS, 0)
+                    ig.game.setPaused(false)
+                    await window.crossnode.testUtil.loadLevel('crossnode/bots')
+
                     finishFunc = finish
                 },
                 update(frame) {
-                    if (frame >= 1000) {
+                    if (frame >= 10000) {
+                        const enemy = ig.game.getEntitiesByType(ig.ENTITY.Enemy)[0]
+                        console.log(enemy.coll.pos)
                         finishFunc(true)
                     }
                 },

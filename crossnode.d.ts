@@ -5,34 +5,26 @@ export type CrossnodeOptions = {
     printImageError?: boolean
     skipTitlescreen?: boolean
     autoEnterGame?: boolean
+    quiet?: boolean
 
-    nukeImageStack?: true
+    nukeImageStack?: boolean
     dontLoadExtensions?: boolean
     extensionWhitelist?: string[]
-} & (
-    | {
-          ccloader?: false
-      }
-    | {
-          ccloader: true
-          modWhitelist?: string[]
-      }
-) &
-    (
-        | {
-              test?: false
-          }
-        | {
-              test: true
-              fps?: number
-              skipFrameWait?: boolean
-          }
-    )
+
+    ccloader2?: boolean
+    modWhitelist?: string[]
+
+    test?: boolean
+    determinism?: boolean
+    fps?: number
+    skipFrameWait?: boolean
+}
 
 export interface CrossnodeTest {
     timeoutSeconds?: number
     fps?: number
     skipFrameWait?: boolean
+    seed?: string
 
     name: string
 
@@ -47,6 +39,11 @@ declare global {
 
         tests: CrossnodeTest[]
         registerTest: (task: CrossnodeTest) => void
+
+        testUtil: {
+            // @ts-expect-error
+            loadLevel(mapName: string, marker?: ig.TeleportPosition, hint?: ig.Game.TeleportLoadHint): Promise<void>
+        }
     }
 }
 

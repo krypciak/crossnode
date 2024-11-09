@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "type": "module",
     "scripts": {
-        "start": "node start.js"
+        "start": "NODE_NO_WARNINGS=1 node start.js"
     },
     "devDependencies": {
         "canvas": "^2.11.2",

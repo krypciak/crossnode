@@ -190,6 +190,7 @@ function setupWindow() {
         'Greenworks',
         'simplifyResources',
         'isLocal',
+        'determinism',
         /* mod specific */
         'modmanager',
         'cc',
@@ -334,7 +335,7 @@ async function ccloaderInit(options) {
         }
         this.ui = new UI(this)
         this.ui._drawMessage = function (text, _type, _timeout) {
-            console.log(`MESSAGE: ${text}`)
+            if (!options.quiet) console.log(`MESSAGE: ${text}`)
         }
         this.loader = new Loader(this.filemanager)
         this.loader.doc = new DOMParser().parseFromString(
@@ -369,10 +370,11 @@ async function ccloaderInit(options) {
         options.modWhitelist.push('crossnode', 'Simplify')
         modloader.mods = modloader.mods.filter(mod => options.modWhitelist.includes(mod.name))
     }
-    console.log(
-        'MODS:',
-        modloader.mods.map(mod => mod.name)
-    )
+    if (!options.quiet)
+        console.log(
+            'MODS:',
+            modloader.mods.map(mod => mod.name)
+        )
 
     modloader._removeDuplicateMods()
     modloader._orderCheckMods()
@@ -448,5 +450,5 @@ export async function startCrossnode(options) {
 
     if (options.ccloader2) await ccloaderPoststart()
 
-    console.log(`Ready (took ${Date.now() - launchDate}ms)`)
+    if (!options.quiet) console.log(`Ready (took ${Date.now() - launchDate}ms)`)
 }
