@@ -8,7 +8,6 @@ export type CrossnodeOptions = {
     quiet?: boolean
 
     nukeImageStack?: boolean
-    dontLoadExtensions?: boolean
     extensionWhitelist?: string[]
 
     ccloader2?: boolean

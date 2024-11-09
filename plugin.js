@@ -23,17 +23,6 @@ export default class CrossNode {
             initDeterminism()
         }
 
-        if (options.quiet) {
-            ig.ExtensionList.inject({
-                onExtensionListLoaded(...args) {
-                    const back = console.log
-                    console.log = function () {}
-                    this.parent(...args)
-                    console.log = back
-                },
-            })
-        }
-
         /* Fix resource loading */
         /* saving it to a variable to it doesnt disappear (it is set to undefined at some point) */
         let simplifyResources = window.simplifyResources
@@ -115,7 +104,7 @@ export default class CrossNode {
                 return ig.root + 'extension/'
             },
             loadInternal() {
-                if (options.dontLoadExtensions) {
+                if (options.extensionWhitelist && options.extensionWhitelist.length == 0) {
                     this.onDirRead(true)
                 } else {
                     fs.readdir(this._getExtensionFolder(), this.onDirRead.bind(this))
@@ -125,7 +114,15 @@ export default class CrossNode {
                 if (options.extensionWhitelist) {
                     list = list.filter(ext => options.extensionWhitelist.includes(ext))
                 }
+
+                const back = console.log
+                console.log = function () {}
                 this.parent(list)
+                console.log = back
+
+                if (!options.quiet && (!options.extensionWhitelist || options.extensionWhitelist.length > 0)) {
+                    console.log('%cEXTENSIONS:%c', 'color:#339966', '', list)
+                }
             },
         })
         ig.Database.inject({
@@ -274,7 +271,7 @@ export default class CrossNode {
             let finishFunc
             window.crossnode.registerTest({
                 fps: 60,
-                skipFrameWait: true,
+                skipFrameWait: false,
                 timeoutSeconds: 1000e3,
 
                 seed: 'welcome to hell',
