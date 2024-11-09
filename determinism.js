@@ -13,12 +13,7 @@ export function initDeterminism() {
             }
 
             const event = new Math.seedrandomSeed(seed)
-            let prevLen = types.length
             window.determinism.event = function () {
-                if (types.length == prevLen) {
-                    throw new Error('callued from god knows wheere')
-                }
-                prevLen = types.length
                 // console.log(
                 //     types.reduce((acc, v) => {
                 //         acc[v] ??= 0

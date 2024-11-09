@@ -191,6 +191,7 @@ function setupWindow() {
         'simplifyResources',
         'isLocal',
         'determinism',
+        'crossnode',
         /* mod specific */
         'modmanager',
         'cc',
@@ -418,13 +419,14 @@ export async function startCrossnode(options) {
     initDom()
     await initLibs()
 
+    mockNwjs()
+    setupWindow()
+    mockMisc()
+    
     window.crossnode = {
         options,
         waitForGamePromise: new Promise(res => (waitForGameResolve = res)),
     }
-    mockNwjs()
-    setupWindow()
-    mockMisc()
 
     if (options.shell) runShell()
 

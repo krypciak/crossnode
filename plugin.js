@@ -268,31 +268,41 @@ export default class CrossNode {
         }
 
         if (options.test) {
-            let finishFunc
-            window.crossnode.registerTest({
-                fps: 60,
-                skipFrameWait: false,
-                timeoutSeconds: 1000e3,
+            let i = 0
+            function genTest() {
+                let finishFunc
+                let myI = i
+                i++
+                return {
+                    fps: 60,
+                    skipFrameWait: true,
+                    timeoutSeconds: 1000e3,
 
-                seed: 'welcome to hell',
-                name: 'obama world!',
-                async setup(finish) {
-                    ig.bgm.clear('MEDIUM_OUT')
-                    ig.interact.entries.forEach(e => ig.interact.removeEntry(e))
-                    ig.game.start(sc.START_MODE.NEW_GAME_PLUS, 0)
-                    ig.game.setPaused(false)
-                    await window.crossnode.testUtil.loadLevel('crossnode/bots')
+                    seed: 'welcome to hell',
+                    name: `obama world! ${myI}`,
+                    async setup(finish) {
+                        ig.interact.entries.forEach(e => ig.interact.removeEntry(e))
 
-                    finishFunc = finish
-                },
-                update(frame) {
-                    if (frame >= 10000) {
-                        const enemy = ig.game.getEntitiesByType(ig.ENTITY.Enemy)[0]
-                        console.log(enemy.coll.pos)
-                        finishFunc(true)
-                    }
-                },
-            })
+                        sc.model.enterNewGame()
+                        sc.model.enterGame()
+                        ig.game.reset()
+                        ig.game.setPaused(false)
+
+                        await window.crossnode.testUtil.loadLevel('crossnode/bots28')
+
+                        finishFunc = finish
+                    },
+                    update(frame) {
+                        if (frame >= 100 * 60) {
+                            console.log(ig.game.playerEntity.coll.pos)
+                            finishFunc(true)
+                        }
+                    },
+                }
+            }
+            for (let i = 0; i < 10; i++) {
+                window.crossnode.registerTest(genTest())
+            }
         }
     }
 }

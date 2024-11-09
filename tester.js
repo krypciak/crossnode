@@ -50,27 +50,24 @@ export function initTestApi() {
 }
 
 let testId = -1
-let testFinished
+let testFinishedArr = []
 let testFrameLimit
 let testFrame
 const notPassed = []
 
 function initTestRunner() {
     console.log(`===== ${'Crossnode tests'.blue.bold} =====`)
-    if (options.skipFrameWait) {
-        ig.Timer.step = function () {
-            const t = ig.Timer._last + 1000 / ig.system.fps
-            ig.Timer.time = ig.Timer.time + Math.min((t - ig.Timer._last) / 1e3, ig.Timer.maxStep) * ig.Timer.timeScale
-            ig.Timer._last = t
-        }
+    ig.Timer.step = function () {
+        const t = ig.Timer._last + 1000 / ig.system.fps
+        ig.Timer.time = ig.Timer.time + Math.min((t - ig.Timer._last) / 1e3, ig.Timer.maxStep) * ig.Timer.timeScale
+        ig.Timer._last = t
     }
 
     let waitForGameResolve
     ig.Loader.inject({
         finalize() {
-            let end = ig.resources.length > 0
             this.parent()
-            if (end && ig.ready && waitForGameResolve) {
+            if (ig.ready && waitForGameResolve) {
                 waitForGameResolve()
             }
         },
@@ -96,13 +93,14 @@ function initTestRunner() {
             ig.game.teleporting.levelData = null
             ig.game.teleporting.clearCache = false
             ig.game.teleporting.timer = 0
-            ig.game.onTeleportEnd()
 
             await promise2
         },
     }
 
     ig.system.stopRunLoop()
+    clearInterval(ig.system.intervalId)
+
     tests.sort((a, b) => a.name.localeCompare(b.name))
 
     testId = -1
@@ -111,15 +109,16 @@ function initTestRunner() {
 
 async function nextTest() {
     testId++
-    testFinished = false
+    let thisTestId = testId
+    testFinishedArr[thisTestId] = false
 
     const test = tests[testId]
     if (!test) return allTestsDone()
 
-    await test.setup(testDone)
     if (window.determinism && test.seed) {
         window.determinism.setSeed(test.seed)
     }
+    await test.setup(testDone)
 
     const fps = test.fps ?? options.fps ?? 60
     testFrameLimit = (test.timeoutSeconds ?? 5) * fps
@@ -128,7 +127,7 @@ async function nextTest() {
     ig.system.running = true
     testFrame = 0
     if (test.skipFrameWait ?? options.skipFrameWait) {
-        while (!testFinished) {
+        while (!testFinishedArr[thisTestId]) {
             testRunnerUpdate()
         }
     } else {
@@ -157,7 +156,7 @@ function testDone(success, msg, timeout) {
     if (!success) {
         notPassed.push([test, success, msg, timeout])
     }
-    testFinished = true
+    testFinishedArr[testId] = true
     ig.system.stopRunLoop()
 
     nextTest()
