@@ -115,7 +115,13 @@ function initTestRunner() {
         tests = tests.filter(test => modTestWhitelist.includes(test.modId))
     }
 
-    tests.sort((a, b) => a.name.localeCompare(b.name))
+    tests.sort((a, b) => {
+        if (a.modId == b.modId) {
+            return a.name.localeCompare(b.name)
+        } else {
+            return a.modId.localeCompare(b.modId)
+        }
+    })
 
     testId = -1
     nextTest()
