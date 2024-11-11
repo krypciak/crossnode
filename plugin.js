@@ -267,7 +267,7 @@ export default class CrossNode {
             }, inter)
         }
 
-        if (options.test) {
+        if (options.test && false) {
             let i = 0
             function genTest() {
                 let finishFunc
