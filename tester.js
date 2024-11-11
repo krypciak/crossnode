@@ -1,4 +1,4 @@
-const { options, waitForGamePromise, modTestWhitelist } = window.crossnode
+const { options, waitForGamePromise } = window.crossnode
 
 function initColors() {
     function stringify(colorStyle, func) {
@@ -8,26 +8,30 @@ function initColors() {
         })
     }
 
+    const close = '\u001b[39m'
     const styles = {
-        black: { open: '\u001b[30m', close: '\u001b[39m' },
-        blue: { open: '\u001b[34m', close: '\u001b[39m' },
+        black: { open: '\u001b[30m', close },
+        blue: { open: '\u001b[34m', close },
+        cyan: { open: '\u001b[36m', close },
+        gray: { open: '\u001b[90m', close },
+        green: { open: '\u001b[32m', close },
+        grey: { open: '\u001b[90m', close },
+        magenta: { open: '\u001b[35m', close },
+        red: { open: '\u001b[31m', close },
+        white: { open: '\u001b[37m', close },
+        yellow: { open: '\u001b[33m', close },
         bold: { open: '\u001b[1m', close: '\u001b[22m' },
-        cyan: { open: '\u001b[36m', close: '\u001b[39m' },
         dim: { open: '\u001b[2m', close: '\u001b[22m' },
-        gray: { open: '\u001b[90m', close: '\u001b[39m' },
-        green: { open: '\u001b[32m', close: '\u001b[39m' },
-        grey: { open: '\u001b[90m', close: '\u001b[39m' },
-        red: { open: '\u001b[31m', close: '\u001b[39m' },
-        reset: { open: '\u001b[0m', close: '\u001b[0m' },
-        strikethrough: { open: '\u001b[9m', close: '\u001b[29m' },
+        italic: { open: '\u001b[3m', close: '\u001b[23m' },
         underline: { open: '\u001b[4m', close: '\u001b[24m' },
-        white: { open: '\u001b[37m', close: '\u001b[39m' },
+        strikethrough: { open: '\u001b[9m', close: '\u001b[29m' },
+        reset: { open: '\u001b[0m', close: '\u001b[0m' },
     }
-    Object.keys(styles).forEach(styleName => {
+    for (const styleName in styles) {
         stringify(styleName, function () {
             return color(this, styleName).toString()
         })
-    })
+    }
     function color(str, styleName) {
         const code = styles[styleName]
         return code.open + str.replace(code.closeRe, code.open) + code.close
@@ -39,6 +43,11 @@ let tests
 export function initTestApi() {
     tests = window.crossnode.tests = []
     window.crossnode.registerTest = function (test) {
+        if (!test.name) throw new Error("test 'name' field is unset or empty.")
+        if (!test.modId) throw new Error("test 'modId' field is unset or empty.")
+        if (!test.setup) throw new Error("test 'setup' field is unset or empty.")
+        if (!test.update) throw new Error("test 'update' field is unset or empty.")
+
         tests.push(test)
     }
 
@@ -101,6 +110,7 @@ function initTestRunner() {
     ig.system.stopRunLoop()
     clearInterval(ig.system.intervalId)
 
+    const { modTestWhitelist } = window.crossnode.options
     if (modTestWhitelist) {
         tests = tests.filter(test => modTestWhitelist.includes(test.modId))
     }
@@ -142,14 +152,15 @@ async function nextTest() {
 }
 
 function printTest(test, success, msg, timeout) {
+    const testName = `${test.modId.cyan.bold} - ${test.name.white.bold}`
     if (timeout) {
-        console.log(`${'x'.red.bold} test ${test.name.white.bold} timeout (${test.timeoutSeconds}s)`)
+        console.log(`${'x'.red.bold} test ${testName} timeout (${test.timeoutSeconds}s)`)
         success = false
     } else {
         if (success) {
-            console.log(`${'√'.green.bold} test ${test.name.white.bold}`)
+            console.log(`${'√'.green.bold} test ${testName}`)
         } else {
-            console.log(`${'x'.red.bold} test ${test.name.white.bold} failed${msg ? `: ${msg}` : ''}`)
+            console.log(`${'x'.red.bold} test ${testName} failed${msg ? `: ${msg}` : ''}`)
         }
     }
 }

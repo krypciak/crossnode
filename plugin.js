@@ -267,7 +267,7 @@ export default class CrossNode {
             }, inter)
         }
 
-        if (options.test && false) {
+        if (options.test) {
             let i = 0
             function genTest() {
                 let finishFunc
@@ -279,7 +279,8 @@ export default class CrossNode {
                     timeoutSeconds: 1000e3,
 
                     seed: 'welcome to hell',
-                    name: `obama world! ${myI}`,
+                    modId: 'crossnode',
+                    name: `example test ${myI}`,
                     async setup(finish) {
                         ig.interact.entries.forEach(e => ig.interact.removeEntry(e))
 
@@ -293,14 +294,23 @@ export default class CrossNode {
                         finishFunc = finish
                     },
                     update(frame) {
-                        if (frame >= 100 * 60) {
-                            console.log(ig.game.playerEntity.coll.pos)
-                            finishFunc(true)
+                        if (frame >= 3 * 60) {
+                            const expected = { x: 262.87, y: 268.09, z: 0 }
+                            const ppos = ig.game.playerEntity.coll.pos
+                            if (Vec3.equal(ppos, expected)) {
+                                finishFunc(true)
+                            } else {
+                                function pv(v) {
+                                    return `${'{'.white.bold} x: ${v.x.toString().yellow}, y: ${v.y.toString().yellow}, z: ${v.z.toString().yellow} ${'}'.white.bold}`
+                                }
+                                finishFunc(false, `ig.game.playerEntity.coll.pos is equal ${pv(ppos)}, expected ${pv(expected)}`)
+                            }
+                            return
                         }
                     },
                 }
             }
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 3; i++) {
                 window.crossnode.registerTest(genTest())
             }
         }
