@@ -1,4 +1,4 @@
-const { options, waitForGamePromise } = window.crossnode
+const { options, waitForGamePromise, modTestWhitelist } = window.crossnode
 
 function initColors() {
     function stringify(colorStyle, func) {
@@ -100,6 +100,10 @@ function initTestRunner() {
 
     ig.system.stopRunLoop()
     clearInterval(ig.system.intervalId)
+
+    if (modTestWhitelist) {
+        tests = tests.filter(test => modTestWhitelist.includes(test.modId))
+    }
 
     tests.sort((a, b) => a.name.localeCompare(b.name))
 

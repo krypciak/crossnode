@@ -14,6 +14,7 @@ export type CrossnodeOptions = {
     modWhitelist?: string[]
 
     test?: boolean
+    modTestWhitelist?: string[]
     determinism?: boolean
     fps?: number
     skipFrameWait?: boolean
@@ -25,6 +26,7 @@ export interface CrossnodeTest {
     skipFrameWait?: boolean
     seed?: string
 
+    modId: string
     name: string
 
     setup: (finish: (success: boolean, msg?: string) => void) => Promise<void>
