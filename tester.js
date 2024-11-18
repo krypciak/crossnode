@@ -1,4 +1,4 @@
-const { options, waitForGamePromise } = window.crossnode
+const { options, waitForGamePromise } = window.crossnode ?? {}
 
 function initColors() {
     function stringify(colorStyle, func) {
