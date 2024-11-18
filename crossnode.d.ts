@@ -42,7 +42,6 @@ declare global {
         registerTest: (task: CrossnodeTest) => void
 
         testUtil: {
-            // @ts-expect-error
             loadLevel(mapName: string, marker?: ig.TeleportPosition, hint?: ig.Game.TeleportLoadHint): Promise<void>
         }
     }
