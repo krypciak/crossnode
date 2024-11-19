@@ -30,7 +30,7 @@ export function initDeterminism() {
 
     Math.random = function () {
         if (!window.determinism.generalRand) throw new Error('determinism: seed not set!')
-        console.log('Math.random()')
+        // console.log('Math.random()')
         return window.determinism.generalRand()
     }
 
