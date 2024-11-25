@@ -29,8 +29,10 @@ export interface CrossnodeTest {
     modId: string
     name: string
 
-    setup: (finish: (success: boolean, msg?: string) => void) => Promise<void>
+    setup: () => Promise<void>
     update: (frame: number) => void
+
+    finish: (success: boolean, msg?: string) => void
 }
 
 declare global {
@@ -39,7 +41,7 @@ declare global {
         options: CrossnodeOptions
 
         tests: CrossnodeTest[]
-        registerTest: (task: CrossnodeTest) => void
+        registerTest: (task: Omit<CrossnodeTest, "finish">) => void
 
         testUtil: {
             loadLevel(mapName: string, marker?: ig.TeleportPosition, hint?: ig.Game.TeleportLoadHint): Promise<void>

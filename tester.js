@@ -49,6 +49,8 @@ export function initTestApi() {
         if (!test.update) throw new Error("test 'update' field is unset or empty.")
 
         test.timeoutSeconds ??= 5
+        test.setup.bind(test)
+        test.update.bind(test)
         tests.push(test)
     }
 
@@ -139,7 +141,8 @@ async function nextTest() {
     if (window.determinism && test.seed) {
         window.determinism.setSeed(test.seed)
     }
-    await test.setup(testDone)
+    test.finish = testDone
+    await test.setup()
 
     const fps = test.fps ?? options.fps ?? 60
     testFrameLimit = test.timeoutSeconds * fps

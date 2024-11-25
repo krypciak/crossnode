@@ -270,7 +270,6 @@ export default class CrossNode {
         if (options.test) {
             let i = 0
             function genTest() {
-                let finishFunc
                 let myI = i
                 i++
                 return {
@@ -281,7 +280,7 @@ export default class CrossNode {
                     seed: 'welcome to hell',
                     modId: 'crossnode',
                     name: `example test ${myI}`,
-                    async setup(finish) {
+                    async setup() {
                         ig.interact.entries.forEach(e => ig.interact.removeEntry(e))
 
                         sc.model.enterNewGame()
@@ -290,20 +289,18 @@ export default class CrossNode {
                         ig.game.setPaused(false)
 
                         await window.crossnode.testUtil.loadLevel('crossnode/bots28')
-
-                        finishFunc = finish
                     },
                     update(frame) {
                         if (frame >= 3 * 60) {
                             const expected = { x: 262.87, y: 268.09, z: 0 }
                             const ppos = ig.game.playerEntity.coll.pos
                             if (Vec3.equal(ppos, expected)) {
-                                finishFunc(true)
+                                this.finish(true)
                             } else {
                                 function pv(v) {
                                     return `${'{'.white.bold} x: ${v.x.toString().yellow}, y: ${v.y.toString().yellow}, z: ${v.z.toString().yellow} ${'}'.white.bold}`
                                 }
-                                finishFunc(false, `ig.game.playerEntity.coll.pos is equal ${pv(ppos)}, expected ${pv(expected)}`)
+                                this.finish(false, `ig.game.playerEntity.coll.pos is equal ${pv(ppos)}, expected ${pv(expected)}`)
                             }
                             return
                         }
