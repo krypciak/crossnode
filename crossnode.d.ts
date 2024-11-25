@@ -29,8 +29,9 @@ export interface CrossnodeTestRuntime {
     modId: string
     name: string
 
-    setup: (this: CrossnodeTestRuntime) => Promise<void>
+    setup: (this: CrossnodeTestRuntime) => void | Promise<void>
     update: (this: CrossnodeTestRuntime, frame: number) => void
+    cleanup?: (this: CrossnodeTestRuntime) => void | Promise<void>
 
     finish: (success: boolean, msg?: string) => void
     id: number

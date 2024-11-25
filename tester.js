@@ -177,14 +177,18 @@ function printTest(test, success, msg, timeout) {
         }
     }
 }
-function testDone(success, msg, timeout) {
+async function testDone(success, msg, timeout) {
+    testFinishedArr[testId] = true
+
     const test = tests[testId]
+    if (test.cleanup) {
+        await test.cleanup()
+    }
     printTest(test, success, msg, timeout)
 
     if (!success) {
         notPassed.push([test, success, msg, timeout])
     }
-    testFinishedArr[testId] = true
     ig.system.stopRunLoop()
 
     nextTest()
