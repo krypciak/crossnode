@@ -29,8 +29,8 @@ export interface CrossnodeTest {
     modId: string
     name: string
 
-    setup: () => Promise<void>
-    update: (frame: number) => void
+    setup: (this: CrossnodeTest) => Promise<void>
+    update: (this: CrossnodeTest, frame: number) => void
 
     finish: (success: boolean, msg?: string) => void
 }
