@@ -53,6 +53,7 @@ export function initTestApi() {
         test.update.bind(test)
         test.id = -1
         tests.push(test)
+        return test
     }
 
     waitForGamePromise.then(() => {

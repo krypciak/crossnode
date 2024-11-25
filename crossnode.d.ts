@@ -20,7 +20,7 @@ export type CrossnodeOptions = {
     skipFrameWait?: boolean
 }
 
-export interface CrossnodeTestRuntime {
+export type CrossnodeTestRuntime<T> = T & {
     timeoutSeconds?: number
     fps?: number
     skipFrameWait?: boolean
@@ -29,22 +29,22 @@ export interface CrossnodeTestRuntime {
     modId: string
     name: string
 
-    setup: (this: CrossnodeTestRuntime) => void | Promise<void>
-    update: (this: CrossnodeTestRuntime, frame: number) => void
-    cleanup?: (this: CrossnodeTestRuntime) => void | Promise<void>
+    setup(this: CrossnodeTestRuntime<T>): void | Promise<void>
+    update(this: CrossnodeTestRuntime<T>, frame: number, kras: T): void
+    cleanup?(this: CrossnodeTestRuntime<T>): void | Promise<void>
 
     finish: (success: boolean, msg?: string) => void
     id: number
 }
-export type CrossnodeTest = Omit<CrossnodeTestRuntime, 'finish' | 'id'>
+export type CrossnodeTest<T = {}> = Omit<CrossnodeTestRuntime<T>, 'finish' | 'id'>
 
 declare global {
     var crossnode: {
         waitForGamePromise: Promise<void>
         options: CrossnodeOptions
 
-        tests: CrossnodeTestRuntime[]
-        registerTest: (task: CrossnodeTest) => void
+        tests: CrossnodeTestRuntime<{}>[]
+        registerTest: <E>(task: CrossnodeTest<E>) => CrossnodeTestRuntime<E>
         currentTestId: number
 
         testUtil: {
