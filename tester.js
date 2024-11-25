@@ -67,6 +67,7 @@ let testId = -1
 let testFinishedArr = []
 let testFrameLimit
 let testFrame
+let intervalId
 const notPassed = []
 
 function initTestRunner() {
@@ -159,7 +160,7 @@ async function nextTest() {
             testRunnerUpdate()
         }
     } else {
-        ig.system.intervalId = setInterval(() => {
+        intervalId = ig.system.intervalId = setInterval(() => {
             testRunnerUpdate()
         }, 1e3 / fps)
     }
@@ -190,7 +191,7 @@ async function testDone(success, msg, timeout) {
     if (!success) {
         notPassed.push([test, success, msg, timeout])
     }
-    ig.system.stopRunLoop()
+    clearInterval(intervalId)
 
     nextTest()
 }
