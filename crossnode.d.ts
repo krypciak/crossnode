@@ -20,7 +20,7 @@ export type CrossnodeOptions = {
     skipFrameWait?: boolean
 }
 
-export interface CrossnodeTest {
+export interface CrossnodeTestRuntime {
     timeoutSeconds?: number
     fps?: number
     skipFrameWait?: boolean
@@ -29,19 +29,22 @@ export interface CrossnodeTest {
     modId: string
     name: string
 
-    setup: (this: CrossnodeTest) => Promise<void>
-    update: (this: CrossnodeTest, frame: number) => void
+    setup: (this: CrossnodeTestRuntime) => Promise<void>
+    update: (this: CrossnodeTestRuntime, frame: number) => void
 
     finish: (success: boolean, msg?: string) => void
+    id: number
 }
+export type CrossnodeTest = Omit<CrossnodeTestRuntime, 'finish' | 'id'>
 
 declare global {
     var crossnode: {
         waitForGamePromise: Promise<void>
         options: CrossnodeOptions
 
-        tests: CrossnodeTest[]
-        registerTest: (task: Omit<CrossnodeTest, "finish">) => void
+        tests: CrossnodeTestRuntime[]
+        registerTest: (task: CrossnodeTest) => void
+        currentTestId: number
 
         testUtil: {
             loadLevel(mapName: string, marker?: ig.TeleportPosition, hint?: ig.Game.TeleportLoadHint): Promise<void>

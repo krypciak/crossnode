@@ -41,8 +41,8 @@ initColors()
 
 let tests
 export function initTestApi() {
-    tests = window.crossnode.tests = []
-    window.crossnode.registerTest = function (test) {
+    tests = crossnode.tests = []
+    crossnode.registerTest = function (test) {
         if (!test.name) throw new Error("test 'name' field is unset or empty.")
         if (!test.modId) throw new Error("test 'modId' field is unset or empty.")
         if (!test.setup) throw new Error("test 'setup' field is unset or empty.")
@@ -51,6 +51,7 @@ export function initTestApi() {
         test.timeoutSeconds ??= 5
         test.setup.bind(test)
         test.update.bind(test)
+        test.id = -1
         tests.push(test)
     }
 
@@ -84,7 +85,7 @@ function initTestRunner() {
             }
         },
     })
-    window.crossnode.testUtil = {
+    crossnode.testUtil = {
         async loadLevel(levelName, marker, hint) {
             await new Promise(res => {
                 const backup = $.ajax
@@ -113,7 +114,7 @@ function initTestRunner() {
     ig.system.stopRunLoop()
     clearInterval(ig.system.intervalId)
 
-    const { modTestWhitelist } = window.crossnode.options
+    const { modTestWhitelist } = crossnode.options
     if (modTestWhitelist) {
         tests = tests.filter(test => modTestWhitelist.includes(test.modId))
     }
@@ -137,6 +138,8 @@ async function nextTest() {
 
     const test = tests[testId]
     if (!test) return allTestsDone()
+
+    test.id = crossnode.currentTestId = thisTestId
 
     if (window.determinism && test.seed) {
         window.determinism.setSeed(test.seed)
