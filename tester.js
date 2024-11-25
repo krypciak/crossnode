@@ -175,7 +175,7 @@ function printTest(test, success, msg, timeout) {
         if (success) {
             console.log(`${'√'.green.bold} test ${testName}`)
         } else {
-            console.log(`${'x'.red.bold} test ${testName} failed${msg ? `: ${msg}` : ''}`)
+            console.log(`${'x'.red.bold} test ${testName} ${`failed${msg ? ': ' : ''}`.red.bold}${msg ? msg : ''}`)
         }
     }
 }
