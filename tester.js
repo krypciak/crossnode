@@ -48,6 +48,7 @@ export function initTestApi() {
         if (!test.setup) throw new Error("test 'setup' field is unset or empty.")
         if (!test.update) throw new Error("test 'update' field is unset or empty.")
 
+        test.timeoutSeconds ??= 5
         tests.push(test)
     }
 
@@ -141,7 +142,7 @@ async function nextTest() {
     await test.setup(testDone)
 
     const fps = test.fps ?? options.fps ?? 60
-    testFrameLimit = (test.timeoutSeconds ?? 5) * fps
+    testFrameLimit = test.timeoutSeconds * fps
     ig.system.fps = fps
 
     ig.system.running = true
