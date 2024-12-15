@@ -190,7 +190,6 @@ function setupWindow() {
         'Greenworks',
         'simplifyResources',
         'isLocal',
-        'determinism',
         'crossnode',
         /* mod specific */
         'modmanager',

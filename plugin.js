@@ -1,6 +1,5 @@
 const fs = require('fs')
 import { initTestApi } from './tester.js'
-import { initDeterminism } from './determinism.js'
 
 export default class CrossNode {
     preload() {
@@ -19,9 +18,6 @@ export default class CrossNode {
         if (!window.crossnode) return
 
         const { options } = window.crossnode
-        if (options.determinism) {
-            initDeterminism()
-        }
 
         /* Fix resource loading */
         /* saving it to a variable to it doesnt disappear (it is set to undefined at some point) */
@@ -265,51 +261,6 @@ export default class CrossNode {
                 fs.writeFileSync('image.png', Buffer.from(canvas.toDataURL().split(',')[1], 'base64'))
                 // console.log('writing')
             }, inter)
-        }
-
-        if (options.test) {
-            let i = 0
-            function genTest() {
-                let myI = i
-                i++
-                return {
-                    fps: 60,
-                    skipFrameWait: true,
-                    timeoutSeconds: 1000e3,
-
-                    seed: 'welcome to hell',
-                    modId: 'crossnode',
-                    name: `example test ${myI}`,
-                    async setup() {
-                        ig.interact.entries.forEach(e => ig.interact.removeEntry(e))
-
-                        sc.model.enterNewGame()
-                        sc.model.enterGame()
-                        ig.game.reset()
-                        ig.game.setPaused(false)
-
-                        await window.crossnode.testUtil.loadLevel('crossnode/bots28')
-                    },
-                    update(frame) {
-                        if (frame >= 3 * 60) {
-                            const expected = { x: 262.87, y: 268.09, z: 0 }
-                            const ppos = ig.game.playerEntity.coll.pos
-                            if (Vec3.equal(ppos, expected)) {
-                                this.finish(true)
-                            } else {
-                                function pv(v) {
-                                    return `${'{'.white.bold} x: ${v.x.toString().yellow}, y: ${v.y.toString().yellow}, z: ${v.z.toString().yellow} ${'}'.white.bold}`
-                                }
-                                this.finish(false, `ig.game.playerEntity.coll.pos is equal ${pv(ppos)}, expected ${pv(expected)}`)
-                            }
-                            return
-                        }
-                    },
-                }
-            }
-            for (let i = 0; i < 3; i++) {
-                window.crossnode.registerTest(genTest())
-            }
         }
     }
 }

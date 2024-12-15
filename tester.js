@@ -143,9 +143,6 @@ async function nextTest() {
 
     test.id = crossnode.currentTestId = thisTestId
 
-    if (window.determinism && test.seed) {
-        window.determinism.setSeed(test.seed)
-    }
     test.finish = testDone
     await test.setup()
 

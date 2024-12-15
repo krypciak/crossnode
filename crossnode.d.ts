@@ -15,7 +15,6 @@ export type CrossnodeOptions = {
 
     test?: boolean
     modTestWhitelist?: string[]
-    determinism?: boolean
     fps?: number
     skipFrameWait?: boolean
 }
@@ -24,7 +23,6 @@ export type CrossnodeTestRuntime<T> = T & {
     timeoutSeconds?: number
     fps?: number
     skipFrameWait?: boolean
-    seed?: string
 
     modId: string
     name: string
