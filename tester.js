@@ -77,6 +77,7 @@ function initTestRunner() {
         ig.Timer.time = ig.Timer.time + Math.min((t - ig.Timer._last) / 1e3, ig.Timer.maxStep) * ig.Timer.timeScale
         ig.Timer._last = t
     }
+    
 
     let waitForGameResolve
     ig.Loader.inject({
@@ -162,6 +163,8 @@ async function nextTest() {
     if (test.skipFrameWait ?? options.skipFrameWait) {
         while (!testFinishedArr[thisTestId]) {
             testRunnerUpdate()
+            /* allow async stuff functions in test.postSetup to finish and set test.postSetupDone to true */
+            if (!test.postSetupDone) await new Promise(res => setTimeout(res, 30))
         }
     } else {
         intervalId = ig.system.intervalId = setInterval(() => {
@@ -186,6 +189,8 @@ function printTest(test, success, msg, timeout) {
 async function testDone(success, msg, timeout) {
     testFinishedArr[testId] = true
 
+    clearInterval(intervalId)
+
     const test = tests[testId]
     if (test.cleanup) {
         await test.cleanup()
@@ -195,7 +200,6 @@ async function testDone(success, msg, timeout) {
     if (!success) {
         notPassed.push([test, success, msg, timeout])
     }
-    clearInterval(intervalId)
 
     nextTest()
 }
