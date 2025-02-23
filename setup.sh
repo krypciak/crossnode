@@ -3,7 +3,6 @@
 set -e
 
 JS_RAW="../../js/game.compiled.js"
-# JS_MODI="../../js/game.compiled.crossnode.js"
 
 if [ ! -d "../../mods" ]; then
     echo "Ensure that ../../mods exists"
@@ -20,5 +19,4 @@ if [ ! -d "../../../ccloader/" ] && [ ! -d "../../../ccloader3" ]; then
     exit 3
 fi
 
-# cp "$JS_RAW" "$JS_MODI"
-# npx prettier --tab-width 4 --no-semi --print-width 200 --bracket-same-line -w "$JS_MODI"
+echo "installed correctly"

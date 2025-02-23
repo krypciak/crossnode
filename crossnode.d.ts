@@ -2,6 +2,7 @@ export type CrossnodeOptions = {
     shell?: boolean
     writeImage?: boolean
     writeImageInterval?: number
+    writeImageInstanceinator?: boolean
     printImageError?: boolean
     skipTitlescreen?: boolean
     autoEnterGame?: boolean
@@ -28,13 +29,15 @@ export type CrossnodeTestRuntime<T> = T & {
     name: string
 
     setup(this: CrossnodeTestRuntime<T>): void | Promise<void>
+    postSetup?(this: CrossnodeTestRuntime<T>): void | Promise<void>
     update(this: CrossnodeTestRuntime<T>, frame: number, kras: T): void
     cleanup?(this: CrossnodeTestRuntime<T>): void | Promise<void>
 
     finish: (success: boolean, msg?: string) => void
     id: number
+    postSetupDone: boolean
 }
-export type CrossnodeTest<T = {}> = Omit<CrossnodeTestRuntime<T>, 'finish' | 'id'>
+export type CrossnodeTest<T = {}> = Omit<CrossnodeTestRuntime<T>, 'finish' | 'id' | 'postSetupDone'>
 
 declare global {
     var crossnode: {

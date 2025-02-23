@@ -255,11 +255,25 @@ export default class CrossNode {
         if (options.writeImage) {
             const inter = options.writeImageInterval ?? 1000 / 10
 
+            let lastWritten = true
             setInterval(() => {
-                if (!(ig && ig.system && ig.system.canvas)) return
-                const canvas = ig.system.canvas
-                fs.writeFileSync('image.png', Buffer.from(canvas.toDataURL().split(',')[1], 'base64'))
-                // console.log('writing')
+                if (!(ig && ig.system && ig.system.canvas && lastWritten)) return
+                lastWritten = false
+                if (options.writeImageInstanceinator) {
+                    Promise.all(
+                        Object.values(instanceinator.instances).map(inst => {
+                            const canvas = inst.ig.system.canvas
+                            return fs.promises.writeFile(`image${inst.id}.png`, Buffer.from(canvas.toDataURL().split(',')[1], 'base64'))
+                        })
+                    ).then(() => {
+                        lastWritten = true
+                    })
+                } else {
+                    const canvas = ig.system.canvas
+                    fs.promises.writeFile('image.png', Buffer.from(canvas.toDataURL().split(',')[1], 'base64')).then(() => {
+                        lastWritten = true
+                    })
+                }
             }, inter)
         }
     }

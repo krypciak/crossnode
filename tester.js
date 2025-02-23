@@ -146,6 +146,13 @@ async function nextTest() {
     test.finish = testDone
     await test.setup()
 
+    if (test.postSetup) {
+        test.postSetupDone = false
+        test.postSetup().then(() => {
+            test.postSetupDone = true
+        })
+    } else test.postSetupDone = true
+
     const fps = test.fps ?? options.fps ?? 60
     testFrameLimit = test.timeoutSeconds * fps
     ig.system.fps = fps
@@ -195,9 +202,14 @@ async function testDone(success, msg, timeout) {
 
 function testRunnerUpdate() {
     const test = tests[testId]
-    test.update(testFrame)
-    ig.system.run()
-    testFrame++
+
+    if (test.postSetupDone) {
+        test.update(testFrame)
+        ig.system.run()
+        testFrame++
+    } else {
+        ig.system.run()
+    }
 
     if (testFrame >= testFrameLimit) {
         testDone(false, '', true)
