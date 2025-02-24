@@ -77,7 +77,6 @@ function initTestRunner() {
         ig.Timer.time = ig.Timer.time + Math.min((t - ig.Timer._last) / 1e3, ig.Timer.maxStep) * ig.Timer.timeScale
         ig.Timer._last = t
     }
-    
 
     let waitForGameResolve
     ig.Loader.inject({
@@ -164,7 +163,7 @@ async function nextTest() {
         while (!testFinishedArr[thisTestId]) {
             testRunnerUpdate()
             /* allow async stuff functions in test.postSetup to finish and set test.postSetupDone to true */
-            if (!test.postSetupDone) await new Promise(res => setTimeout(res, 30))
+            if (test.flushPromises || !test.postSetupDone) await new Promise(res => setTimeout(res, 0))
         }
     } else {
         intervalId = ig.system.intervalId = setInterval(() => {

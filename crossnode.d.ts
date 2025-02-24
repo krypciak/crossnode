@@ -24,6 +24,7 @@ export type CrossnodeTestRuntime<T> = T & {
     timeoutSeconds?: number
     fps?: number
     skipFrameWait?: boolean
+    flushPromises?: boolean
 
     modId: string
     name: string
