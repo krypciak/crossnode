@@ -13,6 +13,15 @@ import * as https from 'https'
 import * as dns from 'dns'
 import * as util from 'util'
 import * as events from 'events'
+import * as tty from 'tty'
+import * as url from 'url'
+import * as buffer from 'buffer'
+import * as stream from 'stream'
+import * as async_hooks from 'async_hooks'
+import * as zlib from 'zlib'
+import * as net from 'net'
+import * as tls from 'tls'
+import ws from 'ws'
 
 function initDom() {
     const dom = new JSDOM(
@@ -78,7 +87,17 @@ function mockNwjs() {
         if (name == 'https') return https
         if (name == 'dns') return dns
         if (name == 'util') return util
+        if (name == 'tty') return tty
+        if (name == 'url') return url
+        if (name == 'buffer') return buffer
+        if (name == 'stream') return stream
+        if (name == 'async_hooks') return async_hooks
         if (name == 'events') return events
+        if (name == 'zlib') return zlib
+        if (name == 'net') return net
+        if (name == 'tls') return tls
+        if (name == 'bufferutil') return bufferutil
+        if (name == 'ws') return ws
         if (name == 'nw.gui') return nwGui()
         if (name == './modules/greenworks-nw-0.35/greenworks') return undefined
         if (name == 'assert') {
@@ -421,7 +440,7 @@ export async function startCrossnode(options) {
     mockNwjs()
     setupWindow()
     mockMisc()
-    
+
     window.crossnode = {
         options,
         waitForGamePromise: new Promise(res => (waitForGameResolve = res)),
