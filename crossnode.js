@@ -427,9 +427,8 @@ async function ccloaderPoststart() {
     // modloader._fireLoadEvent()
 }
 
-async function evalGame() {
-    const gameCompliedJs = await fs.promises.readFile('./assets/js/game.compiled.js', 'utf8')
-    eval(gameCompliedJs)
+async function evalGame(gameCompiledJs) {
+    eval(gameCompiledJs)
 }
 
 export async function startCrossnode(options) {
@@ -454,10 +453,11 @@ export async function startCrossnode(options) {
     if (!options.ccloader2) pluginClass = new (await import('./plugin.js')).default()
 
     if (options.ccloader2) await ccloaderInit(options)
-    if (pluginClass) pluginClass.preload()
-    if (options.preload) options.preload()
 
-    await evalGame()
+    const gameCompiledJs = await fs.promises.readFile(options.gameCompiledJsPath ?? './assets/js/game.compiled.js', 'utf8')
+    if (pluginClass) pluginClass.preload()
+
+    await evalGame(gameCompiledJs)
 
     injectWaitForGame()
 

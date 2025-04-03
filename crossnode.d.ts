@@ -19,6 +19,8 @@ export type CrossnodeOptions = {
     fps?: number
     skipFrameWait?: boolean
 
+    gameCompiledJsPath?: string
+
     preload?: () => void
     postload?: () => void
     prestart?: () => void
