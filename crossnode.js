@@ -450,27 +450,28 @@ export async function startCrossnode(options) {
 
     if (options.shell) runShell()
 
-    if (options.ccloader2) await ccloaderInit(options)
+    let pluginClass
+    if (!options.ccloader2) pluginClass = new (await import('./plugin.js')).default()
 
-    if (!options.ccloader2) {
-        new (await import('./plugin.js')).default().preload()
-    }
+    if (options.ccloader2) await ccloaderInit(options)
+    if (pluginClass) pluginClass.preload()
+    if (options.preload) options.preload()
 
     await evalGame()
 
     injectWaitForGame()
 
+    if (options.postload) options.postload()
     if (options.ccloader2) await ccloaderPostload()
-
-    if (!options.ccloader2) {
-        new (await import('./plugin.js')).default().prestart()
-    }
+    if (pluginClass) pluginClass.prestart()
+    if (options.prestart) options.prestart()
 
     await window.startCrossCode()
 
     await window.crossnode.waitForGamePromise
 
     if (options.ccloader2) await ccloaderPoststart()
+    if (options.poststart) options.poststart()
 
     if (!options.quiet) console.log(`Ready (took ${Date.now() - launchDate}ms)`)
 }

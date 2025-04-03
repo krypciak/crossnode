@@ -18,6 +18,11 @@ export type CrossnodeOptions = {
     modTestWhitelist?: string[]
     fps?: number
     skipFrameWait?: boolean
+
+    preload?: () => void
+    postload?: () => void
+    prestart?: () => void
+    poststart?: () => void
 }
 
 export type CrossnodeTestRuntime<T> = T & {
