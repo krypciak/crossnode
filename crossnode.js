@@ -317,7 +317,9 @@ async function ccloaderInit(options) {
             }
         },
     }
+    const origFetch = global.fetch
     window.fetch = global.fetch = function (url) {
+        if (url.startsWith('http')) return origFetch(url)
         if (!url.startsWith('assets/') && !url.startsWith('/assets/')) {
             url = 'assets/' + url
         }
