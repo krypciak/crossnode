@@ -12,7 +12,7 @@ import * as http from 'http'
 import * as https from 'https'
 import * as dns from 'dns'
 import * as util from 'util'
-import * as events from 'events'
+import events from 'events'
 import * as tty from 'tty'
 import * as url from 'url'
 import * as buffer from 'buffer'
@@ -21,6 +21,9 @@ import * as async_hooks from 'async_hooks'
 import * as zlib from 'zlib'
 import * as net from 'net'
 import * as tls from 'tls'
+import * as querystring from 'querystring'
+import * as timers from 'timers'
+import * as supportsColor from 'supports-color'
 import ws from 'ws'
 
 function initDom() {
@@ -52,6 +55,7 @@ async function initLibs() {
     global.localStorage = new LocalStorage('./scratch')
 
     window.Image = global.Image = Image
+    global.HTMLCanvasElement = window.HTMLCanvasElement
 
     window.$ = global.$ = jquery(window)
 
@@ -96,6 +100,9 @@ function mockNwjs() {
         if (name == 'zlib') return zlib
         if (name == 'net') return net
         if (name == 'tls') return tls
+        if (name == 'querystring') return querystring
+        if (name == 'supports-color') return supportsColor
+        if (name == 'timers') return timers
         if (name == 'bufferutil') return bufferutil
         if (name == 'ws') return ws
         if (name == 'nw.gui') return nwGui()
@@ -108,7 +115,8 @@ function mockNwjs() {
             return func
         }
         console.error(`\nunknown require() module: "${name}"\n`)
-        throw new Error(`unknown require() module: "${name}"`)
+        return {}
+        // throw new Error(`unknown require() module: "${name}"`)
     }
     window.AudioContext = global.AudioContext = class {
         constructor() {}

@@ -10,7 +10,7 @@ importers:
     devDependencies:
       canvas:
         specifier: ^2.11.2
-        version: 2.11.2
+        version: 2.11.2(supports-color@10.0.0)
       crypto-js:
         specifier: ^4.2.0
         version: 4.2.0
@@ -19,7 +19,7 @@ importers:
         version: 3.7.1
       jsdom:
         specifier: ^25.0.1
-        version: 25.0.1(canvas@2.11.2)
+        version: 25.0.1(canvas@2.11.2(supports-color@10.0.0))(supports-color@10.0.0)
       node:
         specifier: ^22.0.0
         version: 22.11.0
@@ -32,6 +32,9 @@ importers:
       semver:
         specifier: ^7.6.3
         version: 7.6.3
+      supports-color:
+        specifier: ^10.0.0
+        version: 10.0.0
       ws:
         specifier: ^8.18.1
         version: 8.18.1
@@ -370,6 +373,10 @@ packages:
     resolution: {integrity: sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==}
     engines: {node: '>=8'}
 
+  supports-color@10.0.0:
+    resolution: {integrity: sha512-HRVVSbCCMbj7/kdWF9Q+bbckjBHLtHMEoJWlkmYzzdwhYMkjkOwubLM6t7NbWKjgKamGDrWL1++KrjUO1t9oAQ==}
+    engines: {node: '>=18'}
+
   symbol-tree@3.2.4:
     resolution: {integrity: sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==}
 
@@ -458,10 +465,10 @@ packages:
 
 snapshots:
 
-  '@mapbox/node-pre-gyp@1.0.11':
+  '@mapbox/node-pre-gyp@1.0.11(supports-color@10.0.0)':
     dependencies:
       detect-libc: 2.0.3
-      https-proxy-agent: 5.0.1
+      https-proxy-agent: 5.0.1(supports-color@10.0.0)
       make-dir: 3.1.0
       node-fetch: 2.7.0
       nopt: 5.0.0
@@ -475,15 +482,15 @@ snapshots:
 
   abbrev@1.1.1: {}
 
-  agent-base@6.0.2:
+  agent-base@6.0.2(supports-color@10.0.0):
     dependencies:
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@10.0.0)
     transitivePeerDependencies:
       - supports-color
 
-  agent-base@7.1.1:
+  agent-base@7.1.1(supports-color@10.0.0):
     dependencies:
-      debug: 4.3.7
+      debug: 4.3.7(supports-color@10.0.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -505,9 +512,9 @@ snapshots:
       balanced-match: 1.0.2
       concat-map: 0.0.1
 
-  canvas@2.11.2:
+  canvas@2.11.2(supports-color@10.0.0):
     dependencies:
-      '@mapbox/node-pre-gyp': 1.0.11
+      '@mapbox/node-pre-gyp': 1.0.11(supports-color@10.0.0)
       nan: 2.22.0
       simple-get: 3.1.1
     transitivePeerDependencies:
@@ -537,9 +544,11 @@ snapshots:
       whatwg-mimetype: 4.0.0
       whatwg-url: 14.0.0
 
-  debug@4.3.7:
+  debug@4.3.7(supports-color@10.0.0):
     dependencies:
       ms: 2.1.3
+    optionalDependencies:
+      supports-color: 10.0.0
 
   decimal.js@10.4.3: {}
 
@@ -596,24 +605,24 @@ snapshots:
     dependencies:
       whatwg-encoding: 3.1.1
 
-  http-proxy-agent@7.0.2:
+  http-proxy-agent@7.0.2(supports-color@10.0.0):
     dependencies:
-      agent-base: 7.1.1
-      debug: 4.3.7
+      agent-base: 7.1.1(supports-color@10.0.0)
+      debug: 4.3.7(supports-color@10.0.0)
     transitivePeerDependencies:
       - supports-color
 
-  https-proxy-agent@5.0.1:
+  https-proxy-agent@5.0.1(supports-color@10.0.0):
     dependencies:
-      agent-base: 6.0.2
-      debug: 4.3.7
+      agent-base: 6.0.2(supports-color@10.0.0)
+      debug: 4.3.7(supports-color@10.0.0)
     transitivePeerDependencies:
       - supports-color
 
-  https-proxy-agent@7.0.5:
+  https-proxy-agent@7.0.5(supports-color@10.0.0):
     dependencies:
-      agent-base: 7.1.1
-      debug: 4.3.7
+      agent-base: 7.1.1(supports-color@10.0.0)
+      debug: 4.3.7(supports-color@10.0.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -636,15 +645,15 @@ snapshots:
 
   jquery@3.7.1: {}
 
-  jsdom@25.0.1(canvas@2.11.2):
+  jsdom@25.0.1(canvas@2.11.2(supports-color@10.0.0))(supports-color@10.0.0):
     dependencies:
       cssstyle: 4.1.0
       data-urls: 5.0.0
       decimal.js: 10.4.3
       form-data: 4.0.1
       html-encoding-sniffer: 4.0.0
-      http-proxy-agent: 7.0.2
-      https-proxy-agent: 7.0.5
+      http-proxy-agent: 7.0.2(supports-color@10.0.0)
+      https-proxy-agent: 7.0.5(supports-color@10.0.0)
       is-potential-custom-element-name: 1.0.1
       nwsapi: 2.2.13
       parse5: 7.2.1
@@ -660,7 +669,7 @@ snapshots:
       ws: 8.18.1
       xml-name-validator: 5.0.0
     optionalDependencies:
-      canvas: 2.11.2
+      canvas: 2.11.2(supports-color@10.0.0)
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -793,6 +802,8 @@ snapshots:
   strip-ansi@6.0.1:
     dependencies:
       ansi-regex: 5.0.1
+
+  supports-color@10.0.0: {}
 
   symbol-tree@3.2.4: {}
 
