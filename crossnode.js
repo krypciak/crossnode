@@ -399,15 +399,16 @@ async function ccloaderInit(options) {
         options.modWhitelist.push('crossnode', 'Simplify')
         modloader.mods = modloader.mods.filter(mod => options.modWhitelist.includes(mod.name))
     }
+
+    modloader._removeDuplicateMods()
+    modloader._orderCheckMods()
+    modloader._registerMods()
+
     if (!options.quiet)
         console.log(
             'MODS:',
             modloader.mods.map(mod => mod.name)
         )
-
-    modloader._removeDuplicateMods()
-    modloader._orderCheckMods()
-    modloader._registerMods()
 
     modloader._setupGamewindow()
 
