@@ -24,6 +24,7 @@ import * as tls from 'tls'
 import * as querystring from 'querystring'
 import * as timers from 'timers'
 import * as supportsColor from 'supports-color'
+import * as os from 'os'
 import ws from 'ws'
 
 function initDom() {
@@ -104,6 +105,7 @@ function mockNwjs() {
         if (name == 'supports-color') return supportsColor
         if (name == 'timers') return timers
         if (name == 'bufferutil') return bufferutil
+        if (name == 'os') return os
         if (name == 'ws') return ws
         if (name == 'nw.gui') return nwGui()
         if (name == './modules/greenworks-nw-0.35/greenworks') return undefined
