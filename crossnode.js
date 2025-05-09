@@ -25,6 +25,7 @@ import * as querystring from 'querystring'
 import * as timers from 'timers'
 import * as supportsColor from 'supports-color'
 import * as os from 'os'
+import repl from 'repl'
 import ws from 'ws'
 
 function initDom() {
@@ -256,21 +257,15 @@ function mockMisc() {
 }
 
 function runShell() {
-    const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout,
-        terminal: false,
+    const server = repl.start({
+        prompt: 'crosscode > ',
+        useGlobal: true,
+        ignoreUndefined: true,
     })
-
-    rl.on('line', line => {
-        try {
-            eval(`console.log(${line})`)
-        } catch (err) {
-            console.log(err)
-        }
+    server.on('exit', () => {
+        process.exit()
     })
-
-    rl.once('close', () => {})
+    return server
 }
 
 let waitForGameResolve
@@ -458,8 +453,6 @@ export async function startCrossnode(options) {
         waitForGamePromise: new Promise(res => (waitForGameResolve = res)),
     }
 
-    if (options.shell) runShell()
-
     let pluginClass
     if (!options.ccloader2) pluginClass = new (await import('./plugin.js')).default()
 
@@ -485,4 +478,6 @@ export async function startCrossnode(options) {
     if (options.poststart) options.poststart()
 
     if (!options.quiet) console.log(`Ready (took ${Date.now() - launchDate}ms)`)
+
+    if (options.shell) runShell()
 }
