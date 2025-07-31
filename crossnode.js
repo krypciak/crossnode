@@ -3,7 +3,6 @@ import { LocalStorage } from 'node-localstorage'
 import { Image } from 'canvas'
 import jquery from 'jquery'
 import CryptoJS from 'crypto-js'
-import * as readline from 'readline'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as semver from 'semver'
@@ -16,7 +15,7 @@ import events from 'events'
 import * as tty from 'tty'
 import * as url from 'url'
 import buffer from 'buffer'
-import * as stream from 'stream'
+import stream from 'stream'
 import * as async_hooks from 'async_hooks'
 import * as zlib from 'zlib'
 import * as net from 'net'
@@ -25,6 +24,7 @@ import * as querystring from 'querystring'
 import * as timers from 'timers'
 import * as supportsColor from 'supports-color'
 import * as os from 'os'
+import stringDecoder from 'string_decoder'
 import repl from 'repl'
 import ws from 'ws'
 
@@ -86,6 +86,8 @@ function mockNwjs() {
         }
     }
     window.require = global.require = function (name) {
+        if (name.startsWith('node:')) name = name.substring('node:'.length)
+
         if (name == 'fs') return fs
         if (name == 'path') return path
         if (name == 'crypto') return crypto
@@ -97,6 +99,7 @@ function mockNwjs() {
         if (name == 'url') return url
         if (name == 'buffer') return buffer
         if (name == 'stream') return stream
+        if (name == 'string_decoder') return stringDecoder
         if (name == 'async_hooks') return async_hooks
         if (name == 'events') return events
         if (name == 'zlib') return zlib
@@ -108,6 +111,7 @@ function mockNwjs() {
         if (name == 'bufferutil') return bufferutil
         if (name == 'os') return os
         if (name == 'ws') return ws
+        if (name == 'fs/promises') return fs.promises
         if (name == 'nw.gui') return nwGui()
         if (name == './modules/greenworks-nw-0.35/greenworks') return undefined
         if (name == 'assert') {
