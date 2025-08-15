@@ -24,9 +24,17 @@ import * as querystring from 'querystring'
 import * as timers from 'timers'
 import * as supportsColor from 'supports-color'
 import * as os from 'os'
+import bufferutil from 'bufferutil'
 import stringDecoder from 'string_decoder'
 import repl from 'repl'
 import ws from 'ws'
+import steamWeb from 'stream/web'
+import http2 from 'http2'
+import consoleImport from 'console'
+import dgram from 'dgram'
+import dnsPromises from 'dns/promises'
+import moduleImport from 'module'
+import processImport from 'process'
 
 function initDom() {
     const dom = new JSDOM(
@@ -85,42 +93,55 @@ function mockNwjs() {
             },
         }
     }
-    window.require = global.require = function (name) {
-        if (name.startsWith('node:')) name = name.substring('node:'.length)
+    const requireMap = {
+        fs: fs,
+        path: path,
+        crypto: crypto,
+        http: http,
+        https: https,
+        dns: dns,
+        util: util,
+        tty: tty,
+        url: url,
+        buffer: buffer,
+        stream: stream,
+        string_decoder: stringDecoder,
+        async_hooks: async_hooks,
+        events: events,
+        zlib: zlib,
+        net: net,
+        tls: tls,
+        querystring: querystring,
+        'supports-color': supportsColor,
+        timers: timers,
+        bufferutil: bufferutil,
+        os: os,
+        ws: ws,
+        'fs/promises': fs.promises,
+        'stream/web': steamWeb,
+        http2: http2,
+        console: consoleImport,
+        dgram: dgram,
+        'dns/promises': dnsPromises,
+        module: moduleImport,
+        process: processImport,
 
-        if (name == 'fs') return fs
-        if (name == 'path') return path
-        if (name == 'crypto') return crypto
-        if (name == 'http') return http
-        if (name == 'https') return https
-        if (name == 'dns') return dns
-        if (name == 'util') return util
-        if (name == 'tty') return tty
-        if (name == 'url') return url
-        if (name == 'buffer') return buffer
-        if (name == 'stream') return stream
-        if (name == 'string_decoder') return stringDecoder
-        if (name == 'async_hooks') return async_hooks
-        if (name == 'events') return events
-        if (name == 'zlib') return zlib
-        if (name == 'net') return net
-        if (name == 'tls') return tls
-        if (name == 'querystring') return querystring
-        if (name == 'supports-color') return supportsColor
-        if (name == 'timers') return timers
-        if (name == 'bufferutil') return bufferutil
-        if (name == 'os') return os
-        if (name == 'ws') return ws
-        if (name == 'fs/promises') return fs.promises
-        if (name == 'nw.gui') return nwGui()
-        if (name == './modules/greenworks-nw-0.35/greenworks') return undefined
-        if (name == 'assert') {
+        'nw.gui': nwGui(),
+        './modules/greenworks-nw-0.35/greenworks': undefined,
+        assert: (() => {
             const func = function (cond) {
                 if (!cond) throw new Error('assertion failed')
             }
             func.ok = func
             return func
-        }
+        })(),
+    }
+    window.require = global.require = function (name) {
+        if (name.startsWith('node:')) name = name.substring('node:'.length)
+
+        const entry = requireMap[name]
+        if (entry) return entry
+
         console.error(`\nunknown require() module: "${name}"\n`)
         return {}
         // throw new Error(`unknown require() module: "${name}"`)

@@ -6,6 +6,7 @@
         "start": "NODE_NO_WARNINGS=1 node start.js"
     },
     "devDependencies": {
+        "bufferutil": "^4.0.9",
         "canvas": "^3.0.0",
         "crypto-js": "^4.2.0",
         "jquery": "^3.7.1",

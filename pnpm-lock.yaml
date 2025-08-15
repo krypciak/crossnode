@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      bufferutil:
+        specifier: ^4.0.9
+        version: 4.0.9
       canvas:
         specifier: ^3.0.0
         version: 3.1.0
@@ -19,7 +22,7 @@ importers:
         version: 3.7.1
       jsdom:
         specifier: ^25.0.1
-        version: 25.0.1(canvas@3.1.0)(supports-color@10.0.0)
+        version: 25.0.1(bufferutil@4.0.9)(canvas@3.1.0)(supports-color@10.0.0)
       node:
         specifier: ^22.15.0
         version: 22.15.0
@@ -37,7 +40,7 @@ importers:
         version: 10.0.0
       ws:
         specifier: ^8.18.1
-        version: 8.18.1
+        version: 8.18.1(bufferutil@4.0.9)
 
 packages:
 
@@ -87,6 +90,10 @@ packages:
 
   buffer@5.7.1:
     resolution: {integrity: sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==}
+
+  bufferutil@4.0.9:
+    resolution: {integrity: sha512-WDtdLmJvAuNNPzByAYpRo2rF1Mmradw6gvWsQKf63476DDXmomT9zUiGypLcG4ibIM67vhAj8jJRdbmEws2Aqw==}
+    engines: {node: '>=6.14.2'}
 
   call-bind-apply-helpers@1.0.2:
     resolution: {integrity: sha512-Sp1ablJ0ivDkSzjcaJdxEunN5/XvksFJ2sMBFfq6x0ryhQV/2b/KwFe21cMpmHtPOSij8K99/wSfoEuTObmuMQ==}
@@ -294,6 +301,10 @@ packages:
 
   node-bin-setup@1.1.3:
     resolution: {integrity: sha512-opgw9iSCAzT2+6wJOETCpeRYAQxSopqQ2z+N6BXwIMsQQ7Zj5M8MaafQY8JMlolRR6R1UXg2WmhKp0p9lSOivg==}
+
+  node-gyp-build@4.8.4:
+    resolution: {integrity: sha512-LA4ZjwlnUblHVgq0oBF3Jl/6h/Nvs5fzBLwdEF4nuxnFdsfajde4WfxtJr3CaiH+F6ewcIB/q4jQ4UzPyid+CQ==}
+    hasBin: true
 
   node-localstorage@3.0.5:
     resolution: {integrity: sha512-GCwtK33iwVXboZWYcqQHu3aRvXEBwmPkAMRBLeaX86ufhqslyUkLGsi4aW3INEfdQYpUB5M9qtYf3eHvAk2VBg==}
@@ -504,6 +515,10 @@ snapshots:
       base64-js: 1.5.1
       ieee754: 1.2.1
 
+  bufferutil@4.0.9:
+    dependencies:
+      node-gyp-build: 4.8.4
+
   call-bind-apply-helpers@1.0.2:
     dependencies:
       es-errors: 1.3.0
@@ -656,7 +671,7 @@ snapshots:
 
   jquery@3.7.1: {}
 
-  jsdom@25.0.1(canvas@3.1.0)(supports-color@10.0.0):
+  jsdom@25.0.1(bufferutil@4.0.9)(canvas@3.1.0)(supports-color@10.0.0):
     dependencies:
       cssstyle: 4.3.1
       data-urls: 5.0.0
@@ -677,7 +692,7 @@ snapshots:
       whatwg-encoding: 3.1.1
       whatwg-mimetype: 4.0.0
       whatwg-url: 14.2.0
-      ws: 8.18.1
+      ws: 8.18.1(bufferutil@4.0.9)
       xml-name-validator: 5.0.0
     optionalDependencies:
       canvas: 3.1.0
@@ -713,6 +728,8 @@ snapshots:
   node-addon-api@7.1.1: {}
 
   node-bin-setup@1.1.3: {}
+
+  node-gyp-build@4.8.4: {}
 
   node-localstorage@3.0.5:
     dependencies:
@@ -862,7 +879,9 @@ snapshots:
       imurmurhash: 0.1.4
       signal-exit: 4.1.0
 
-  ws@8.18.1: {}
+  ws@8.18.1(bufferutil@4.0.9):
+    optionalDependencies:
+      bufferutil: 4.0.9
 
   xml-name-validator@5.0.0: {}
 
