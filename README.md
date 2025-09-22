@@ -23,4 +23,4 @@ For example usage see [cc-multibakery](https://github.com/krypciak/cc-multibaker
 - [server test script](https://github.com/krypciak/cc-multibakery/blob/main/scripts/test.js)
 
 For example tests see this [cc-multibakery AoC 2024 day 15](https://github.com/krypciak/cc-multibakery/blob/main/src/server/test/aoc2024d15.ts#L291).  
-Showcase of a bigger version of this map here is [available on youtube](youtube.com/watch?v=-6oM-lSYbJY)  
+Showcase of a bigger version of this map here is [available on youtube](https://youtube.com/watch?v=-6oM-lSYbJY)  
