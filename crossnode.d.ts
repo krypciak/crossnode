@@ -1,4 +1,4 @@
-export type CrossnodeOptions = {
+export interface CrossnodeOptions {
     shell?: boolean
     writeImage?: boolean
     writeImageInterval?: number

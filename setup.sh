@@ -14,8 +14,8 @@ if [ ! -f "$JS_RAW" ]; then
     exit 2
 fi
 
-if [ ! -d "../../../ccloader/" ] && [ ! -d "../../../ccloader3" ]; then
-    echo "CCLoader2 or CCLoader3 must be installed."
+if [ ! -d "../../../ccloader/" ]; then
+    echo "CCLoader2 must be installed."
     exit 3
 fi
 
