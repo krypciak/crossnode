@@ -89,7 +89,7 @@ function mockNwjs() {
                 },
             },
             App: {
-                dataPath: './GameData',
+                dataPath: './GameData/Default',
                 argv: [],
             },
         }
