@@ -24,6 +24,7 @@ import * as querystring from 'querystring'
 import * as timers from 'timers'
 import * as supportsColor from 'supports-color'
 import * as os from 'os'
+import * as child_process from 'child_process'
 import bufferutil from 'bufferutil'
 import stringDecoder from 'string_decoder'
 import repl from 'repl'
@@ -125,6 +126,7 @@ function mockNwjs() {
         'dns/promises': dnsPromises,
         module: moduleImport,
         process: processImport,
+        child_process: child_process,
 
         'nw.gui': nwGui(),
         './modules/greenworks-nw-0.35/greenworks': undefined,
