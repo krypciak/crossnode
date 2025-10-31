@@ -96,8 +96,8 @@ import CustomDebugState from '../../simplify/lib/custom-debug-state.js';
 		 * @returns {Promise<string>}
 		 */
 		loadFile(path, callback, errorCb) {
-			console.log("\nhello load file", path, "\n")
-			return fs.promises.readFile(path, "utf-8")
+			if (!path.startsWith('assets')) path = 'assets/' + path
+			return require('fs').promises.readFile(path, "utf-8")
 			
 			const result = new Promise((resolve, reject) => {
 				path = this._stripAssets(path);
@@ -226,6 +226,7 @@ import CustomDebugState from '../../simplify/lib/custom-debug-state.js';
 		 * @returns {Array<{mod: Mod, path: string}>} patches
 		 */
 		_getRelevantPatchDetails(path) {
+			if (path.startsWith('file://')) path = path.substring(7)
 			return this._getAllAssetDetails(path.substr(igroot.length) + '.patch');
 		}
 	
@@ -443,6 +444,7 @@ import CustomDebugState from '../../simplify/lib/custom-debug-state.js';
 
 			for (const mod of window.activeMods) {
 				const asset = mod.getAsset(name);
+
 				if(asset) {
 					if (typeof asset === 'string') {
 						result.push({
