@@ -42,13 +42,14 @@ export default class CrossNode {
                 drawComposite() {},
             })
         }
+        const emptyImg = new Image()
+        // 1x1 empty
+        emptyImg.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4AWJiYGBgAAAAAP//XRcpzQAAAAZJREFUAwAADwADJDd96QAAAABJRU5ErkJggg=='
 
         ig.Image.inject({
             loadInternal() {
                 if (options.nukeImageStack) {
-                    this.data = new Image()
-                    this.width = 0
-                    this.height = 0
+                    this.data = emptyImg
                     this.loadingFinished(true)
                     return
                 }
