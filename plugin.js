@@ -31,6 +31,9 @@ export default class CrossNode {
 
         if (options.nukeImageStack) {
             ig.perf.draw = false
+            ig.perf.weather = false
+            ig.perf.lighting = false
+
             ig.ImagePattern.inject({
                 initBuffer() {},
             })
@@ -40,6 +43,9 @@ export default class CrossNode {
             ig.NinePatch.inject({
                 draw() {},
                 drawComposite() {},
+            })
+            ig.Weather.inject({
+                updateWeather() {},
             })
         }
         const emptyImg = new Image()
