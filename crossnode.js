@@ -248,6 +248,7 @@ function setupWindow() {
         'simplifyResources',
         'isLocal',
         'crossnode',
+        'ccmod',
         /* mod specific */
         'modmanager',
         'cc',
