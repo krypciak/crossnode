@@ -36,6 +36,7 @@ import dgram from 'dgram'
 import dnsPromises from 'dns/promises'
 import moduleImport from 'module'
 import processImport from 'process'
+import readline from 'readline'
 
 function setDocumentLoadingState(state) {
     Object.defineProperty(document, 'readyState', {
@@ -138,6 +139,7 @@ function mockNwjs() {
         module: moduleImport,
         process: processImport,
         child_process: child_process,
+        readline: readline,
 
         'nw.gui': nwGui(),
         './modules/greenworks-nw-0.35/greenworks': undefined,
