@@ -1,6 +1,9 @@
 import * as patchSteps from '../../simplify/lib/patch-steps-lib/src/patchsteps.js';
 import stripJsonComments from '../../simplify/lib/strip-json-comments.js';
 import CustomDebugState from '../../simplify/lib/custom-debug-state.js';
+
+import fs from 'fs'
+
 (() => {
 	const igroot = window.IG_ROOT || '';
 
@@ -97,7 +100,7 @@ import CustomDebugState from '../../simplify/lib/custom-debug-state.js';
 		 */
 		loadFile(path, callback, errorCb) {
 			if (!path.startsWith('assets')) path = 'assets/' + path
-			return require('fs').promises.readFile(path, "utf-8")
+			return fs.promises.readFile(path, "utf-8")
 			
 			const result = new Promise((resolve, reject) => {
 				path = this._stripAssets(path);
