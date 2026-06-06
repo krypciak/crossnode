@@ -388,6 +388,7 @@ async function ccloaderInit(options) {
         this._initializeServiceWorker = function () {}
 
         this.filemanager = new Filemanager(this)
+        this.filemanager.getAllModPackages = function() { return [] }
         this.filemanager.packedFileExists = function () {
             return false
         }
