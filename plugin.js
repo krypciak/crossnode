@@ -259,28 +259,48 @@ export default class CrossNode {
             })
         }
 
-        if (options.writeImage) {
+        if (!options.nukeImageStack && options.writeImage) {
             const inter = options.writeImageInterval ?? 1000 / 10
 
+            const PROFILE = false
+
+            function getImpl(obj) {
+                return obj[Object.getOwnPropertySymbols(obj)[0]]
+            }
+            async function getBufferFromCanvas(htmlCanvas) {
+                const canvas = getImpl(htmlCanvas)._getCanvas()
+                const buf = canvas.toBuffer()
+                return buf
+            }
+            async function saveCanvas(htmlCanvas, filePath) {
+                PROFILE && console.time('saving ' + filePath)
+                const buf = await getBufferFromCanvas(htmlCanvas)
+                await fs.promises.writeFile(filePath, buf)
+                PROFILE && console.timeEnd('saving ' + filePath)
+            }
+
+            const dir = process.platform === 'linux' ? '/tmp/crosscode' : ''
+            if (dir) fs.promises.mkdir('/tmp/crosscode', { recursive: true })
+
+            function getFilePath(instId) {
+                return `${dir}/image${instId}.png`
+            }
+
             let lastWritten = true
-            setInterval(() => {
-                if (!(ig && ig.system && ig.system.canvas && lastWritten)) return
+            setInterval(async () => {
+                if (!window.ig || !ig.system || !ig.system.canvas || !lastWritten) return
                 lastWritten = false
+
                 if (options.writeImageInstanceinator) {
-                    Promise.all(
-                        Object.values(instanceinator.instances).map(inst => {
-                            const canvas = inst.ig.system.canvas
-                            return fs.promises.writeFile(`image${inst.id}.png`, Buffer.from(canvas.toDataURL().split(',')[1], 'base64'))
-                        })
-                    ).then(() => {
-                        lastWritten = true
-                    })
+                    await Promise.all(
+                        Object.values(instanceinator.instances)
+                            .filter(inst => inst.display)
+                            .map(inst => saveCanvas(inst.ig.system.canvas, getFilePath(inst.id)))
+                    )
                 } else {
-                    const canvas = ig.system.canvas
-                    fs.promises.writeFile('image.png', Buffer.from(canvas.toDataURL().split(',')[1], 'base64')).then(() => {
-                        lastWritten = true
-                    })
+                    await saveCanvas(ig.systme.canvas)
                 }
+                lastWritten = true
             }, inter)
         }
     }
