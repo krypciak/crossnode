@@ -37,6 +37,15 @@ import dnsPromises from 'dns/promises'
 import moduleImport from 'module'
 import processImport from 'process'
 
+function setDocumentLoadingState(state) {
+    Object.defineProperty(document, 'readyState', {
+        configurable: true,
+        get() {
+            return state
+        },
+    })
+}
+
 function initDom() {
     const dom = new JSDOM(
         `
@@ -58,6 +67,8 @@ function initDom() {
     global.document = window.document
     global.DOMParser = window.DOMParser
     window.process = process
+
+    setDocumentLoadingState('loading')
 }
 
 async function initLibs() {
@@ -453,7 +464,6 @@ async function ccloaderInit(options) {
 
 async function ccloaderPostload() {
     await modloader._executePostload()
-    modloader.loader.continue()
 }
 
 async function ccloaderPoststart() {
@@ -495,6 +505,8 @@ export async function startCrossnode(options) {
 
     if (options.postload) options.postload()
     if (options.ccloader2) await ccloaderPostload()
+    setDocumentLoadingState('complete')
+    if (options.ccloader2) modloader.loader.continue()
     if (pluginClass) pluginClass.prestart()
     if (options.prestart) options.prestart()
 

@@ -150,7 +150,7 @@ async function nextTest() {
         test.postSetupDone = false
         test.postSetup().then(() => {
             test.postSetupDone = true
-        })
+        }).catch(console.error)
     } else test.postSetupDone = true
 
     const fps = test.fps ?? options.fps ?? 60
