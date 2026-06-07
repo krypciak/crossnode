@@ -151,11 +151,16 @@ function mockNwjs() {
             return func
         })(),
     }
+
+    const isBun = typeof global.Bun !== 'undefined'
+
     window.require = global.require = function (name) {
         if (name.startsWith('node:')) name = name.substring('node:'.length)
 
         const entry = requireMap[name]
         if (entry) return entry
+
+        if (isBun) return require(name)
 
         console.error(`\nunknown require() module: "${name}"\n`)
         return {}
