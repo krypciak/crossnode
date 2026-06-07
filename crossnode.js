@@ -388,7 +388,9 @@ async function ccloaderInit(options) {
         this._initializeServiceWorker = function () {}
 
         this.filemanager = new Filemanager(this)
-        this.filemanager.getAllModPackages = function() { return [] }
+        this.filemanager.getAllModPackages = function () {
+            return []
+        }
         this.filemanager.packedFileExists = function () {
             return false
         }
@@ -478,10 +480,18 @@ async function evalGame(gameCompiledJs) {
     eval(gameCompiledJs)
 }
 
+const fileExists = async path =>
+    fs.promises
+        .access(path)
+        .then(() => true)
+        .catch(() => false)
+
 export async function startCrossnode(options) {
     const launchDate = Date.now()
 
-    process.chdir('../../..')
+    if (!(await fileExists('favicon.png'))) {
+        process.chdir('../../..')
+    }
     initDom()
     await initLibs()
 
