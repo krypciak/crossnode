@@ -287,7 +287,18 @@ export default class CrossNode {
                 if (options.writeImageInstanceinator) {
                     await Promise.all(
                         Object.values(instanceinator.instances)
-                            .filter(inst => inst.display)
+                            .filter(inst => inst.display || inst.forceDraw || inst.crossnodeForceWriteImage)
+                            .map(inst => {
+                                if (inst.crossnodeForceWriteImage) {
+                                    instanceinator.runTask(inst, () => {
+                                        ig.perf.draw = true
+                                        ig.game.draw()
+                                        ig.game.finalDraw()
+                                        ig.perf.draw = false
+                                    })
+                                }
+                                return inst
+                            })
                             .map(inst => saveCanvas(inst.ig.system.canvas, getFilePath(inst.id)))
                     )
                 } else {
