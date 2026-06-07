@@ -19,4 +19,4 @@ if [ ! -d "../../../ccloader/" ]; then
     exit 3
 fi
 
-echo "installed correctly"
+echo "✓ installed correctly"

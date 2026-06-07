@@ -1,15 +1,8 @@
 const fs = require('fs')
-import { initTestApi } from './tester.js'
 
 export default class CrossNode {
     preload() {
         if (!window.crossnode) return
-        const { options } = window.crossnode
-
-        if (options.test) {
-            initTestApi()
-        }
-
         /* mute the "INIT FULLSCREEN VALUE true" text */
         localStorage.setItem('IG_FULLSCREEN', '')
     }
