@@ -68,6 +68,7 @@ function initDom() {
     global.document = window.document
     global.DOMParser = window.DOMParser
     window.process = process
+    global.XMLHttpRequest = window.XMLHttpRequest
 
     setDocumentLoadingState('loading')
 }
@@ -208,7 +209,7 @@ function setupWindow() {
     /* Set variables from assets/node-webkit.html */
     window.IG_GAME_SCALE = global.IG_GAME_SCALE = 1
     window.IG_GAME_CACHE = global.IG_GAME_CACHE = ''
-    window.IG_ROOT = global.IG_ROOT = `${process.cwd()}/assets/`
+    window.IG_ROOT = global.IG_ROOT = ''
     window.IG_WIDTH = global.IG_WIDTH = 568
     window.IG_HEIGHT = global.IG_HEIGHT = 320
     window.IG_HIDE_DEBUG = global.IG_HIDE_DEBUG = false

@@ -19,7 +19,8 @@ export default class CrossNode {
         ig.getFilePath = function (a) {
             a && (a = a.trim())
             const res = ig.fileForwarding[a] ? ig.fileForwarding[a] : a
-            return `file://${res}`
+            return res
+            // return `file://${res}`
         }
 
         if (options.nukeImageStack) {

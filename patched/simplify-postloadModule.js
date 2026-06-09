@@ -32,7 +32,7 @@ import fs from 'fs'
 			const baseDir = mod.baseDirectory.substr(7);
 			const assets = window.simplify.getAssets(mod);
 			for (const asset of assets) {
-				if(asset.endsWith('.patch')) {
+				if(!asset.endsWith('.json')) {
 					continue;
 				}
 	
@@ -99,22 +99,7 @@ import fs from 'fs'
 		 * @returns {Promise<string>}
 		 */
 		loadFile(path, callback, errorCb) {
-			if (!path.startsWith('assets')) path = 'assets/' + path
-			return fs.promises.readFile(path, "utf-8")
-			
-			const result = new Promise((resolve, reject) => {
-				path = this._stripAssets(path);
-		
-				const req = new XMLHttpRequest();
-				req.open('GET', path, true);
-				req.onreadystatechange = function(){
-					if(req.readyState === 4 && req.status >= 200 && req.status < 300) {
-						resolve(req.responseText);
-					}
-				};
-				req.onerror = err => reject(err);
-				req.send();
-			});
+			const result = fetch(this._stripAssets(path)).then(resp => resp.text());
 	
 			if (callback || errorCb) {
 				result
@@ -366,11 +351,12 @@ import fs from 'fs'
 		}
 	
 		_hookHttpRequest() {
-			return
 			const instance = this;
 			const original = XMLHttpRequest.prototype.open;
 			XMLHttpRequest.prototype.open = function(_, url) {
-				arguments[1] = instance._applyAssetOverrides(url) || url;
+				url = instance._applyAssetOverrides(url) || url;
+				url = 'file://' + process.cwd() + '/assets/' + url
+				arguments[1] = url
 				return original.apply(this, arguments);
 			};
 		}
