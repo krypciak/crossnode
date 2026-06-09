@@ -46,6 +46,8 @@ export default class CrossNode {
         // 1x1 empty
         emptyImg.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4AWJiYGBgAAAAAP//XRcpzQAAAAZJREFUAwAADwADJDd96QAAAABJRU5ErkJggg=='
 
+        const root = process.cwd() + '/assets/'
+
         ig.Image.inject({
             loadInternal() {
                 if (options.nukeImageStack) {
@@ -57,15 +59,16 @@ export default class CrossNode {
                 this.data.onload = this.onload.bind(this)
                 this.data.onerror = this.onerror.bind(this)
 
-                let path = ig.root + this.path + ig.getCacheSuffix()
+                let path = ig.root + this.path.trim() + ig.getCacheSuffix()
                 if (options.ccloader2) {
                     path = simplifyResources._applyAssetOverrides(path)
                 }
+                path = root + path
                 this.data.src = path
             },
-            onerror() {
+            onerror(e) {
                 if (options.printImageError) {
-                    console.log('Image error!', this.data.src)
+                    console.log('Image error!', this.data.src, e)
                 }
                 this.data = new Image()
                 this.onload()

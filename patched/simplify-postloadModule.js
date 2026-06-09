@@ -352,8 +352,8 @@ import fs from 'fs'
 	
 		_hookHttpRequest() {
 			const instance = this;
-			const original = XMLHttpRequest.prototype.open;
-			XMLHttpRequest.prototype.open = function(_, url) {
+			const original = window.XMLHttpRequest.prototype.open;
+			window.XMLHttpRequest.prototype.open = function(_, url) {
 				url = instance._applyAssetOverrides(url) || url;
 				url = 'file://' + process.cwd() + '/assets/' + url
 				arguments[1] = url
