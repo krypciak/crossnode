@@ -484,10 +484,6 @@ async function ccloaderPoststart() {
     // modloader._fireLoadEvent()
 }
 
-async function evalGame(gameCompiledJs) {
-    eval(gameCompiledJs)
-}
-
 const fileExists = async path =>
     fs.promises
         .access(path)
@@ -517,10 +513,10 @@ export async function startCrossnode(options) {
 
     if (options.ccloader2) await ccloaderInit(options)
 
-    const gameCompiledJs = await fs.promises.readFile(options.gameCompiledJsPath ?? './assets/js/game.compiled.js', 'utf8')
     if (pluginClass) pluginClass.preload()
 
-    await evalGame(gameCompiledJs)
+    const normalRequire = moduleImport.createRequire(new URL(`file://${process.cwd()}/`))
+    normalRequire(options.gameCompiledJsPath ?? './assets/js/game.compiled.js')
 
     injectWaitForGame()
 
