@@ -1,20 +1,39 @@
 const fs = require('fs')
 
+const root = process.cwd() + '/assets/'
+
+const { options } = window.crossnode
+
 export default class CrossNode {
     preload() {
         if (!window.crossnode) return
+
         /* mute the "INIT FULLSCREEN VALUE true" text */
         localStorage.setItem('IG_FULLSCREEN', '')
+
+        const imageSrcDescriptor = Object.getOwnPropertyDescriptor(Image.prototype, 'src')
+        Object.defineProperty(Image.prototype, 'src', {
+            configurable: true,
+            get() {
+                return imageSrcDescriptor.get.call(this)
+            },
+            set(path) {
+                if (!path.startsWith('data:') && !path.startsWith('http')) {
+                    path = ig.getFilePath(path)
+                    if (options.ccloader2 && window.simplifyResources1) {
+                        path = window.simplifyResources1._applyAssetOverrides(path)
+                    }
+                    path = root + path
+                }
+                imageSrcDescriptor.set.call(this, path)
+            },
+        })
     }
 
     prestart() {
         if (!window.crossnode) return
 
-        const { options } = window.crossnode
-
         /* Fix resource loading */
-        /* saving it to a variable to it doesnt disappear (it is set to undefined at some point) */
-        let simplifyResources = window.simplifyResources
 
         ig.getFilePath = function (a) {
             a && (a = a.trim())
@@ -46,8 +65,6 @@ export default class CrossNode {
         // 1x1 empty
         emptyImg.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4AWJiYGBgAAAAAP//XRcpzQAAAAZJREFUAwAADwADJDd96QAAAABJRU5ErkJggg=='
 
-        const root = process.cwd() + '/assets/'
-
         ig.Image.inject({
             loadInternal() {
                 if (options.nukeImageStack) {
@@ -59,11 +76,7 @@ export default class CrossNode {
                 this.data.onload = this.onload.bind(this)
                 this.data.onerror = this.onerror.bind(this)
 
-                let path = ig.root + this.path.trim() + ig.getCacheSuffix()
-                if (options.ccloader2) {
-                    path = simplifyResources._applyAssetOverrides(path)
-                }
-                path = root + path
+                const path = ig.root + this.path.trim() + ig.getCacheSuffix()
                 this.data.src = path
             },
             onerror(e) {

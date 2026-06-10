@@ -273,6 +273,8 @@ function setupWindow() {
         'cc',
         'nax',
         'entries',
+        'simplify',
+        'customPlayerMenus',
     ]
 
     for (const name of toCapture) {

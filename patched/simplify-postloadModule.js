@@ -455,5 +455,5 @@ import fs from 'fs'
 		}
 	}
 
-	window.simplifyResources = new SimplifyResources();
+	window.simplifyResources = window.simplifyResources1 = new SimplifyResources();
 })();
