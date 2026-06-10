@@ -17,5 +17,5 @@ startCrossnode({
 
         'input-api',
     ],
-    extensionWhitelist: [],
+    extensionWhitelist: ['post-game'],
 })

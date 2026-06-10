@@ -114,7 +114,7 @@ export default class CrossNode {
         })
         ig.ExtensionList.inject({
             _getExtensionFolder() {
-                return ig.root + 'extension/'
+                return root + 'extension/'
             },
             loadInternal() {
                 if (options.extensionWhitelist && options.extensionWhitelist.length == 0) {
