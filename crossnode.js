@@ -1,5 +1,4 @@
 import { JSDOM } from 'jsdom'
-import { LocalStorage } from 'node-localstorage'
 import { Image } from 'canvas'
 import jquery from 'jquery'
 import CryptoJS from 'crypto-js'
@@ -37,6 +36,8 @@ import dnsPromises from 'dns/promises'
 import moduleImport from 'module'
 import processImport from 'process'
 import readline from 'readline'
+
+import { AsyncLocalStorage } from './localstorage.js'
 
 function setDocumentLoadingState(state) {
     Object.defineProperty(document, 'readyState', {
@@ -76,7 +77,10 @@ function initDom() {
 async function initLibs() {
     global.navigator.appVersion = '4.0'
 
-    global.localStorage = new LocalStorage('./scratch')
+    global.localStorage = new AsyncLocalStorage({ storagePath: './localStorage.json' })
+    Object.defineProperty(window, 'localStorage', {
+        value: global.localStorage
+    })
 
     window.Image = global.Image = Image
     global.HTMLCanvasElement = window.HTMLCanvasElement
