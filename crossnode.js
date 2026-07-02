@@ -79,9 +79,10 @@ async function initLibs() {
 
     global.localStorage = new AsyncLocalStorage({ storagePath: './localStorage.json' })
     Object.defineProperty(window, 'localStorage', {
-        value: global.localStorage
+        value: global.localStorage,
     })
 
+    console.log('image:', Image)
     window.Image = global.Image = Image
     global.HTMLCanvasElement = window.HTMLCanvasElement
 
@@ -310,15 +311,16 @@ function mockMisc() {
 }
 
 function runShell() {
-    const server = repl.start({
-        prompt: 'crosscode > ',
-        useGlobal: true,
-        ignoreUndefined: true,
-    })
-    server.on('exit', () => {
-        process.exit()
-    })
-    return server
+    if (repl.start) {
+        const server = repl.start({
+            prompt: 'crosscode > ',
+            useGlobal: true,
+            ignoreUndefined: true,
+        })
+        server.on('exit', () => {
+            process.exit()
+        })
+    }
 }
 
 let waitForGameResolve
