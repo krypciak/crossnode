@@ -82,7 +82,6 @@ async function initLibs() {
         value: global.localStorage,
     })
 
-    console.log('image:', Image)
     window.Image = global.Image = Image
     global.HTMLCanvasElement = window.HTMLCanvasElement
 
