@@ -335,6 +335,9 @@ function injectWaitForGame() {
     })
 }
 
+import { Loader } from '../../../ccloader/js/loader.js'
+import { UI } from '../../../ccloader/js/ui.js'
+
 let modloader
 async function ccloaderInit(options) {
     window.isLocal = true
@@ -344,8 +347,6 @@ async function ccloaderInit(options) {
     await import('./patched/ccloader-packed.js')
     const { ModLoader } = await import('../../../ccloader/js/ccloader.js')
     const { Filemanager } = await import('../../../ccloader/js/filemanager.js')
-    const { Loader } = await import('../../../ccloader/js/loader.js')
-    const { UI } = await import('../../../ccloader/js/ui.js')
 
     window.caches = global.caches = {
         async delete() {},
@@ -396,51 +397,54 @@ async function ccloaderInit(options) {
         })
     }
 
-    const PatchedModLoader = function () {
-        console.logToFile = function () {}
-        this._initializeServiceWorker = function () {}
-
-        this.filemanager = new Filemanager(this)
-        this.filemanager.getAllModPackages = function () {
+    const PatchedFileManager = class extends Filemanager {
+        getAllModPackages() {
             return []
         }
-        this.filemanager.packedFileExists = function () {
+        packedFileExists() {
             return false
         }
-        {
-            const orig = this.filemanager.loadImage
-            this.filemanager.loadImage = function (path) {
-                return orig('./' + path.substring('../'.length))
-            }
+        loadImage(path) {
+            return super.loadImage('./' + path.substring('../'.length))
         }
-        this.filemanager._loadScript = async function _loadScript(url, _doc, _type) {
+        async _loadScript(url, _doc, _type) {
             return import(`../../${url}`)
         }
-        this.ui = new UI(this)
-        this.ui._drawMessage = function (text, _type, _timeout) {
-            if (!options.quiet) console.log(`MESSAGE: ${text}`)
-        }
-        this.loader = new Loader(this.filemanager)
-        this.loader.doc = new DOMParser().parseFromString(
-            `<html>
+    }
+    const PatchedUI = class extends UI {
+        _drawMessage() {}
+    }
+
+    const PatchedModLoader = class {
+        _initializeServiceWorker() {}
+        constructor() {
+            console.logToFile = function () {}
+
+            this.filemanager = new PatchedFileManager(this)
+            this.ui = new PatchedUI(this)
+
+            this.loader = new Loader(this.filemanager)
+            this.loader.doc = new DOMParser().parseFromString(
+                `<html>
                 <body>
                     <div id="status"></div>
                 </body>
             </html>`,
-            'text/html'
-        )
+                'text/html'
+            )
 
-        this.overlay = document.getElementById('overlay')
-        this.status = document.getElementById('status')
+            this.overlay = document.getElementById('overlay')
+            this.status = document.getElementById('status')
 
-        /** @type {Mod[]} */
-        this.mods = []
-        /** @type {{[name: string]: string}} */
-        this.versions = {}
-        /** @type {string[]} */
-        this.extensions = this.filemanager.getExtensions()
+            /** @type {Mod[]} */
+            this.mods = []
+            /** @type {{[name: string]: string}} */
+            this.versions = {}
+            /** @type {string[]} */
+            this.extensions = this.filemanager.getExtensions()
+        }
     }
-    PatchedModLoader.prototype = ModLoader.prototype
+    Object.setPrototypeOf(PatchedModLoader.prototype, ModLoader.prototype)
 
     modloader = new PatchedModLoader()
 
