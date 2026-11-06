@@ -319,7 +319,7 @@ export default class CrossNode {
                             .map(inst => saveCanvas(inst.ig.system.canvas, getFilePath(inst.id)))
                     )
                 } else {
-                    await saveCanvas(ig.systme.canvas)
+                    await saveCanvas(ig.system.canvas)
                 }
                 lastWritten = true
             }, inter)
