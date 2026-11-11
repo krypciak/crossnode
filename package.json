@@ -3,14 +3,18 @@
     "version": "1.0.0",
     "type": "module",
     "scripts": {
-        "start": "NODE_NO_WARNINGS=1 node start.js",
+        "start": "NODE_NO_WARNINGS=1 node start.ts",
         "format": "oxfmt"
     },
     "devDependencies": {
         "@types/bun": "^1.3.14",
         "@types/chrome": "^0.1.43",
+        "@types/crypto-js": "^4.2.2",
         "@types/jquery": "^4.0.1",
+        "@types/jsdom": "^30.0.0",
         "@types/node": "^25.9.2",
+        "@types/semver": "^7.8.0",
+        "@types/ws": "^8.18.2",
         "bufferutil": "^4.1.0",
         "canvas": "^3.2.3",
         "crypto-js": "^4.2.0",
