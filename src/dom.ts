@@ -1,6 +1,6 @@
 import fs from 'fs'
 import { Window } from 'happy-dom'
-import { Image } from '@napi-rs/canvas'
+import { getImageClass } from './canvas-backend'
 import { NapiCanvasAdapter } from './napi-canvas-adapter'
 
 export function setDocumentLoadingState(state: DocumentReadyState): void {
@@ -45,7 +45,7 @@ export function initDom(): void {
 
     setDocumentLoadingState('loading')
 
-    const NapiImage = Image as unknown as typeof globalThis.Image
+    const NapiImage = getImageClass() as unknown as typeof globalThis.Image
     window.Image = NapiImage
     globalThis.Image = NapiImage
 }

@@ -1,4 +1,4 @@
-import { createCanvas, type Canvas, type SKRSContext2D } from '@napi-rs/canvas'
+import { createCanvas, type Canvas, type SKRSContext2D } from './canvas-backend'
 import type ICanvasAdapter from 'happy-dom/lib/canvas/ICanvasAdapter.js'
 import type ICanvasAdapterCaller from 'happy-dom/lib/canvas/ICanvasAdapterCaller.js'
 import type ICanvasRenderingContext2D from 'happy-dom/lib/canvas/ICanvasRenderingContext2D.js'
@@ -7,6 +7,7 @@ import type Blob from 'happy-dom/lib/file/Blob.js'
 /* vibe coded */
 export class NapiCanvasAdapter implements ICanvasAdapter {
     private canvasCache = new WeakMap<ICanvasAdapterCaller['canvas'], Canvas>()
+    private sizeHooked = new WeakSet<ICanvasAdapterCaller['canvas']>()
 
     private getNativeCanvas(caller: ICanvasAdapterCaller): Canvas {
         const canvasElement = caller.canvas
@@ -19,7 +20,53 @@ export class NapiCanvasAdapter implements ICanvasAdapter {
             if (nativeCanvas.width !== canvasElement.width) nativeCanvas.width = canvasElement.width
             if (nativeCanvas.height !== canvasElement.height) nativeCanvas.height = canvasElement.height
         }
+
+        this.hookCanvasSize(canvasElement, nativeCanvas)
         return nativeCanvas
+    }
+
+    /**
+     * Keep the native canvas in sync while the DOM canvas is resized.
+     *
+     * Getting a context once and then assigning canvas.width/height afterwards is
+     * a common pattern (ccloader's UI does it). Without this hook the native
+     * canvas only catches up on the next getContext()/toDataURL(), after drawing
+     * has already happened.
+     */
+    private hookCanvasSize(canvasElement: ICanvasAdapterCaller['canvas'], nativeCanvas: Canvas): void {
+        if (this.sizeHooked.has(canvasElement)) return
+        this.sizeHooked.add(canvasElement)
+
+        const hook = (property: 'width' | 'height'): void => {
+            let prototype = Object.getPrototypeOf(canvasElement)
+            let descriptor: PropertyDescriptor | undefined
+            while (prototype && !(descriptor = Object.getOwnPropertyDescriptor(prototype, property))) {
+                prototype = Object.getPrototypeOf(prototype)
+            }
+
+            const originalGet = descriptor?.get
+            const originalSet = descriptor?.set
+            if (!originalGet || !originalSet) return
+
+            Object.defineProperty(canvasElement, property, {
+                configurable: true,
+                get(this: any): number {
+                    return originalGet.call(this)
+                },
+                set(this: any, value: number): void {
+                    const previous = originalGet.call(this)
+                    originalSet.call(this, value)
+                    const next = originalGet.call(this)
+                    if (next === previous) return
+
+                    if (property === 'width') nativeCanvas.width = next
+                    else nativeCanvas.height = next
+                },
+            })
+        }
+
+        hook('width')
+        hook('height')
     }
 
     resolveCanvasSource(source: any): any {
@@ -45,7 +92,6 @@ export class NapiCanvasAdapter implements ICanvasAdapter {
         const originalDrawImage = nativeContext.drawImage.bind(nativeContext)
         nativeContext.drawImage = function (this: any, image: any, ...args: any[]) {
             const resolvedImage = this._adapter.resolveCanvasSource(image)
-            // @ts-expect-error
             return originalDrawImage(resolvedImage, ...args)
         } as any
 
