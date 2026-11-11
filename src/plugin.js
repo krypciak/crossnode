@@ -274,12 +274,9 @@ export default class CrossNode {
 
             const PROFILE = false
 
-            function getImpl(obj) {
-                return obj[Object.getOwnPropertySymbols(obj)[0]]
-            }
             async function getBufferFromCanvas(htmlCanvas) {
-                const canvas = getImpl(htmlCanvas)._getCanvas()
-                const buf = canvas.toBuffer()
+                const native = window.happyDOM.settings.canvasAdapter.getNativeFor(htmlCanvas)
+                const buf = await native.encode('png')
                 return buf
             }
             async function saveCanvas(htmlCanvas, filePath) {
@@ -319,7 +316,7 @@ export default class CrossNode {
                             .map(inst => saveCanvas(inst.ig.system.canvas, getFilePath(inst.id)))
                     )
                 } else {
-                    await saveCanvas(ig.system.canvas)
+                    await saveCanvas(ig.system.canvas, getFilePath(0))
                 }
                 lastWritten = true
             }, inter)

@@ -3,32 +3,32 @@
     "version": "1.0.0",
     "type": "module",
     "scripts": {
-        "start": "NODE_NO_WARNINGS=1 node start.ts",
+        "start": "bun start.ts",
         "setup": "bun setup.ts",
+        "build": "bun build --outdir=./out --bundle --target=bun start.ts --external nw.gui --sourcemap",
         "format": "oxfmt"
     },
     "devDependencies": {
-        "@types/bun": "^1.3.14",
+        "@napi-rs/canvas": "^1.1.0",
+        "@types/bun": "^1.4.4",
         "@types/chrome": "^0.1.43",
         "@types/crypto-js": "^4.2.2",
         "@types/jquery": "^4.0.1",
-        "@types/jsdom": "^30.0.0",
         "@types/jszip": "^3.4.1",
-        "@types/node": "^25.9.2",
+        "@types/node": "^25.9.9",
         "@types/nw.js": "^0.115.0",
         "@types/semver": "^7.8.0",
         "@types/ws": "^8.18.2",
-        "bufferutil": "^4.1.0",
-        "canvas": "^3.2.3",
+        "bufferutil": "^4.2.0",
         "crypto-js": "^4.2.0",
+        "happy-dom": "^21.0.4",
         "jquery": "^3.7.1",
-        "jsdom": "^27.1.1",
-        "node": "^26.3.0",
+        "node": "^26.13.0",
         "oxfmt": "^0.60.0",
-        "semver": "^7.8.2",
+        "semver": "^7.8.6",
         "supports-color": "^10.2.2",
         "typescript": "^7.0.2",
         "ultimate-crosscode-typedefs": "github:krypciak/ultimate-crosscode-typedefs",
-        "ws": "^8.21.0"
+        "ws": "^8.22.2"
     }
 }

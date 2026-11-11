@@ -1,5 +1,4 @@
 import * as fs from 'fs'
-import { Image } from 'canvas'
 import jquery from 'jquery'
 import CryptoJS from 'crypto-js'
 
@@ -187,8 +186,6 @@ export async function initLibs() {
         value: global.localStorage,
     })
 
-    // @ts-expect-error
-    window.Image = global.Image = Image
     global.HTMLCanvasElement = window.HTMLCanvasElement
 
     // @ts-expect-error

@@ -19,6 +19,6 @@ startCrossnode({
         // 'input-api',
     ],
     extensionWhitelist: ['post-game'],
-    // writeImage: true,
+    writeImage: true,
     skipTitlescreen: true,
 })

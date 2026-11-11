@@ -4,10 +4,10 @@ import { initDom, setDocumentLoadingState } from './dom'
 import { initLibs, mockNwjs } from './nwjs-mock'
 import { setupWindowCapture } from './window-capture'
 import { requireFix } from './require-fix'
-
-import repl from 'repl'
-import moduleImport from 'module'
 import { fileExists } from './util'
+
+import moduleImport from 'module'
+import repl from 'repl'
 
 export interface CrossnodeOptions {
     shell?: boolean
@@ -42,7 +42,7 @@ declare global {
 }
 
 function runShell() {
-    if (repl.start) {
+    if (repl?.start) {
         const server = repl.start({
             prompt: 'crosscode > ',
             useGlobal: true,

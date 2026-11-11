@@ -1,7 +1,3 @@
 allowBuilds:
   bufferutil: true
-  canvas: true
   node: true
-onlyBuiltDependencies:
-  - canvas
-  - node
