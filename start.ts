@@ -1,5 +1,5 @@
 #!/bin/node
-import { startCrossnode } from './src/crossnode.ts'
+import { startCrossnode } from './src/crossnode'
 
 startCrossnode({
     shell: true,

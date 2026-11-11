@@ -1,7 +1,10 @@
+import * as fs from 'fs'
+
 export function mockNwjs() {
     nwGui()
     audioFix()
     cachesFix()
+    fetchFix()
 
     process.versions['node-webkit'] = '0.72.0'
     // @ts-expect-error
@@ -141,5 +144,29 @@ function cachesFix() {
                 async put() {},
             }
         },
+    }
+}
+
+function fetchFix() {
+    const origFetch = global.fetch
+
+    // @ts-expect-error
+    window.fetch = global.fetch = function (url: string) {
+        if (url.startsWith('http')) return origFetch(url)
+        if (!url.startsWith('assets/') && !url.startsWith('/assets/')) {
+            url = 'assets/' + url
+        }
+        url = './' + url
+        return new Promise(async res => {
+            const data = await fs.promises.readFile(url, 'utf8')
+            res({
+                async text() {
+                    return data
+                },
+                json() {
+                    return JSON.parse(data)
+                },
+            } as Response)
+        })
     }
 }

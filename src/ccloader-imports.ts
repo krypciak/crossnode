@@ -5,7 +5,9 @@ export async function importCCLoaderClasses() {
     const { ModLoader } = await import('../../../../ccloader/js/ccloader.js')
     const { Filemanager } = await import('../../../../ccloader/js/filemanager.js')
 
-    return { Loader, UI, ModLoader, Filemanager }
+    const { Mod } = await import('../../../../ccloader/js/mod.js')
+
+    return { Loader, UI, ModLoader, Filemanager, Mod }
 }
 
 import * as patchSteps from '../../simplify/lib/patch-steps-lib/src/patchsteps.js'

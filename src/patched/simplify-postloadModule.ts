@@ -3,19 +3,19 @@ import { importSimplifyPostloadMoudleLibs } from '../ccloader-imports'
 
 const { patchSteps, stripJsonComments, CustomDebugState } = await importSimplifyPostloadMoudleLibs()
 
-const igroot = window.IG_ROOT || ''
-
 interface Handler {
     handler: (xhr: any, url: string) => void
     filter?: string
     beforeCall?: boolean
 }
 
-class SimplifyResources {
+export class SimplifyResources {
     handlers: Handler[] = []
     patchSteps = {
         callable: patchSteps.callable,
     }
+
+    igroot: string = window.IG_ROOT || ''
 
     constructor() {
         this._hookAjax()
@@ -55,7 +55,7 @@ class SimplifyResources {
             async (fromGame: boolean, url: string) => {
                 if (fromGame) {
                     // Import (game file)
-                    return await this.loadJSONPatched(igroot + url)
+                    return await this.loadJSONPatched(this.igroot + url)
                 } else {
                     // Include (mod file)
                     return await this.loadJSON(patch.mod.baseDirectory + url)
@@ -129,10 +129,10 @@ class SimplifyResources {
 
     _applyAssetOverrides(path: string): string {
         const apply = () => {
-            if (!path.startsWith(igroot)) {
+            if (!path.startsWith(this.igroot)) {
                 return ''
             }
-            const fullreplace = this._getAllAssets(path.substring(igroot.length))
+            const fullreplace = this._getAllAssets(path.substring(this.igroot.length))
 
             if (fullreplace && fullreplace.length > 0) {
                 if (fullreplace.length > 1) console.warn("Conflict between '" + fullreplace.join("', '") + "' found. Taking '" + fullreplace[0] + "'")
@@ -140,9 +140,9 @@ class SimplifyResources {
                 //console.log("Replacing '" + settings.url + "' with '" + fullreplace[0]  + "'");
 
                 if (fullreplace[0].indexOf('assets') === 0) {
-                    return igroot + fullreplace[0].substring(7)
+                    return this.igroot + fullreplace[0].substring(7)
                 } else {
-                    return igroot + fullreplace[0]
+                    return this.igroot + fullreplace[0]
                 }
             }
             return path
@@ -156,7 +156,7 @@ class SimplifyResources {
 
     _getRelevantPatchDetails(path: string): { mod: Mod; path: string }[] {
         if (path.startsWith('file://')) path = path.substring(7)
-        return this._getAllAssetDetails(path.substring(igroot.length) + '.patch')
+        return this._getAllAssetDetails(path.substring(this.igroot.length) + '.patch')
     }
 
     async _hookAjax() {
@@ -196,7 +196,7 @@ class SimplifyResources {
     }
 
     _callHandlers(settings: JQueryAjaxSettings, beforeCall: boolean) {
-        const url = settings.url!.substring(igroot.length)
+        const url = settings.url!.substring(this.igroot.length)
         for (const entry of this.handlers) {
             if (entry.beforeCall == beforeCall && (!entry.filter || url.match(entry.filter))) {
                 entry.handler(settings, url)
@@ -276,6 +276,7 @@ class SimplifyResources {
     _hookImages() {
         const instance = this
         const original = window.Image
+        const igroot = this.igroot
         window.Image = class Image extends original {
             set src(url: string) {
                 const fullreplace = instance._getAllAssets(url.substring(igroot.length))
@@ -353,5 +354,3 @@ declare global {
     var simplifyResources: SimplifyResources
     var simplifyResources1: SimplifyResources
 }
-
-window.simplifyResources = window.simplifyResources1 = new SimplifyResources()

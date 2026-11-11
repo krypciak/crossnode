@@ -1,11 +1,11 @@
-import * as fs from 'fs'
 import * as semver from 'semver'
 
 import { PackedManagerClass } from './patched/ccloader-packed'
-// @ts-ignore
 import type { Mod } from '../../../../ccloader/js/mod'
 import type { CrossnodeOptions } from './crossnode'
 import { importCCLoaderClasses } from './ccloader-imports'
+import { importModScript, importModPlugin } from './mod-import'
+import { SimplifyResources } from './patched/simplify-postloadModule'
 
 type ModLoader = InstanceType<typeof import('../../../../ccloader/js/ccloader.js').ModLoader>
 export async function ccloaderInit(options: CrossnodeOptions) {
@@ -16,29 +16,7 @@ export async function ccloaderInit(options: CrossnodeOptions) {
 
     window.PackedManager = global.PackedManager = PackedManagerClass
 
-    const { Loader, UI, ModLoader, Filemanager } = await importCCLoaderClasses()
-
-    const origFetch = global.fetch
-
-    // @ts-expect-error
-    window.fetch = global.fetch = function (url: string) {
-        if (url.startsWith('http')) return origFetch(url)
-        if (!url.startsWith('assets/') && !url.startsWith('/assets/')) {
-            url = 'assets/' + url
-        }
-        url = './' + url
-        return new Promise(async res => {
-            const data = await fs.promises.readFile(url, 'utf8')
-            res({
-                async text() {
-                    return data
-                },
-                json() {
-                    return JSON.parse(data)
-                },
-            } as Response)
-        })
-    }
+    const { Loader, UI, ModLoader, Filemanager, Mod } = await importCCLoaderClasses()
 
     const PatchedFileManager = class extends Filemanager {
         getAllModPackages() {
@@ -51,7 +29,7 @@ export async function ccloaderInit(options: CrossnodeOptions) {
             return super.loadImage('./' + path.substring('../'.length))
         }
         async _loadScript(url: string, _doc: unknown, _type: string) {
-            return import(`../../../${url}`)
+            return importModScript(url)
         }
     }
     const PatchedUI = class extends UI {
@@ -99,6 +77,22 @@ export async function ccloaderInit(options: CrossnodeOptions) {
     }
     Object.setPrototypeOf(PatchedModLoader.prototype, ModLoader.prototype)
 
+    Mod.prototype._loadPlugin = async function (this: typeof Mod) {
+        // @ts-expect-error
+        const src: string = this.plugin
+        const module = await importModPlugin(src)
+
+        const plugin = module.default
+        if (!plugin || !plugin.prototype) {
+            return
+        }
+
+        const pluginInstance = new plugin(this)
+        // @ts-expect-error
+        this.pluginInstance = pluginInstance
+        return pluginInstance
+    }
+
     const modloader = new PatchedModLoader() as unknown as ModLoader
 
     await modloader._buildCrosscodeVersion()
@@ -131,8 +125,8 @@ export async function ccloaderInit(options: CrossnodeOptions) {
     Simplify.prestart = undefined
     Simplify.postload = function () {
         this._applyArgs()
-        /* use a modified version of postloadModule.js */
-        return import('./patched/simplify-postloadModule.js')
+
+        window.simplifyResources = window.simplifyResources1 = new SimplifyResources()
     }
 
     await modloader._executePreload()
