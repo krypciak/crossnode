@@ -6,8 +6,8 @@ import { setupWindowCapture } from './window-capture'
 import { requireFix } from './require-fix'
 import { fileExists } from './util'
 
-import repl from 'repl'
-// const repl = {} as typeof import('repl')
+// import repl from 'repl'
+const repl = {} as typeof import('repl')
 
 export interface CrossnodeOptions {
     shell?: boolean

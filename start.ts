@@ -8,6 +8,8 @@ startCrossnode({
     modWhitelist: [
         'ccmodmanager',
 
+        'cc-instanceinator',
+
         // 'cc-alybox',
         // 'cc-variable-charge-time',
         //
