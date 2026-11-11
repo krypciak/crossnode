@@ -1,6 +1,11 @@
 import fs from 'fs'
 import path from 'path'
 
+interface AsyncLocalStorageOptions {
+    storagePath: string
+    flushIntervalMs?: number
+}
+
 export class AsyncLocalStorage {
     cache = new Map()
     storagePath
@@ -8,7 +13,7 @@ export class AsyncLocalStorage {
     changeCount = 0
     isSaving = false
 
-    constructor(options) {
+    constructor(options: AsyncLocalStorageOptions) {
         this.storagePath = path.resolve(options.storagePath)
         this.flushIntervalMs = options.flushIntervalMs ?? 5000
 
@@ -41,16 +46,16 @@ export class AsyncLocalStorage {
         })
     }
 
-    getItem(key) {
+    getItem(key: string) {
         return this.cache.get(key) ?? null
     }
 
-    setItem(key, value) {
+    setItem(key: string, value: unknown) {
         this.cache.set(key, String(value))
         this.onChange()
     }
 
-    removeItem(key) {
+    removeItem(key: string) {
         this.cache.delete(key)
         this.onChange()
     }
@@ -64,7 +69,7 @@ export class AsyncLocalStorage {
         return this.cache.size
     }
 
-    key(index) {
+    key(index: number) {
         if (index < 0 || index >= this.cache.size) return null
         return Array.from(this.cache.keys())[index]
     }
@@ -98,7 +103,7 @@ export class AsyncLocalStorage {
                 }
             }
         } catch (err) {
-            if (err.code != 'ENOENT') {
+            if (err && typeof err === 'object' && 'code' in err && err.code != 'ENOENT') {
                 console.error(`Error loading storage file ${this.storagePath}:`, err)
             }
         }

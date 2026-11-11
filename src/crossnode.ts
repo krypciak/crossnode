@@ -1,311 +1,43 @@
-import { JSDOM } from 'jsdom'
-import { Image } from 'canvas'
-import jquery from 'jquery'
-import CryptoJS from 'crypto-js'
-import * as fs from 'fs'
-import * as path from 'path'
-import * as semver from 'semver'
-import * as crypto from 'crypto'
-import * as http from 'http'
-import * as https from 'https'
-import * as dns from 'dns'
-import * as util from 'util'
-import events from 'events'
-import * as tty from 'tty'
-import * as url from 'url'
-import buffer from 'buffer'
-import stream from 'stream'
-import * as async_hooks from 'async_hooks'
-import * as zlib from 'zlib'
-import * as net from 'net'
-import * as tls from 'tls'
-import * as querystring from 'querystring'
-import * as timers from 'timers'
-import * as supportsColor from 'supports-color'
-import * as os from 'os'
-import * as child_process from 'child_process'
-import bufferutil from 'bufferutil'
-import stringDecoder from 'string_decoder'
+import type {} from 'ultimate-crosscode-typedefs'
+import { ccloaderInit, ccloaderPostload, ccloaderPoststart } from './ccloader'
+import { initDom, initLibs, setDocumentLoadingState } from './dom'
+import { mockNwjs } from './nwjs-mock'
+import { setupWindowCapture } from './window-capture'
+import { requireFix } from './require-fix'
+
 import repl from 'repl'
-import ws from 'ws'
-import steamWeb from 'stream/web'
-import http2 from 'http2'
-import consoleImport from 'console'
-import dgram from 'dgram'
-import dnsPromises from 'dns/promises'
 import moduleImport from 'module'
-import processImport from 'process'
-import readline from 'readline'
+import { fileExists } from './util'
 
-import { AsyncLocalStorage } from './localstorage.js'
+export interface CrossnodeOptions {
+    shell?: boolean
+    writeImage?: boolean
+    writeImageInterval?: number
+    writeImageInstanceinator?: boolean
+    printImageError?: boolean
+    skipTitlescreen?: boolean
+    autoEnterGame?: boolean
+    quiet?: boolean
 
-function setDocumentLoadingState(state) {
-    Object.defineProperty(document, 'readyState', {
-        configurable: true,
-        get() {
-            return state
-        },
-    })
+    nukeImageStack?: boolean
+    extensionWhitelist?: string[]
+
+    ccloader2?: boolean
+    modWhitelist?: string[]
+
+    fps?: number
+    skipFrameWait?: boolean
+
+    preload?: () => void
+    postload?: () => void
+    prestart?: () => void
+    poststart?: () => void
 }
 
-function initDom() {
-    const dom = new JSDOM(
-        `
-        <!DOCTYPE html>
-        <html>
-            <body>
-                <div id="game" >
-                    <canvas id="canvas" width="568" height="320"></canvas>
-                </div>
-            </body>
-        </html>
-        `,
-        {
-            pretendToBeVisual: true,
-        }
-    )
-
-    global.window = dom.window
-    global.document = window.document
-    global.DOMParser = window.DOMParser
-    window.process = process
-    global.XMLHttpRequest = window.XMLHttpRequest
-
-    setDocumentLoadingState('loading')
-}
-
-async function initLibs() {
-    global.navigator.appVersion = '4.0'
-
-    global.localStorage = new AsyncLocalStorage({ storagePath: './localStorage.json' })
-    Object.defineProperty(window, 'localStorage', {
-        value: global.localStorage,
-    })
-
-    window.Image = global.Image = Image
-    global.HTMLCanvasElement = window.HTMLCanvasElement
-
-    window.$ = global.$ = jquery(window)
-
-    window.CryptoJS = global.CryptoJS = CryptoJS
-
-    await import('../../impact/page/js/seedrandom.js')
-}
-
-function mockNwjs() {
-    function nwGui() {
-        return {
-            Window: {
-                get() {
-                    return {
-                        isFullscreen: false,
-                        close() {},
-                        enterFullscreen() {},
-                        leaveFullscreen() {},
-                    }
-                },
-            },
-            App: {
-                dataPath: './GameData/Default',
-                argv: [],
-            },
-        }
-    }
-    const requireMap = {
-        fs: fs,
-        path: path,
-        crypto: crypto,
-        http: http,
-        https: https,
-        dns: dns,
-        util: util,
-        tty: tty,
-        url: url,
-        buffer: buffer,
-        stream: stream,
-        string_decoder: stringDecoder,
-        async_hooks: async_hooks,
-        events: events,
-        zlib: zlib,
-        net: net,
-        tls: tls,
-        querystring: querystring,
-        'supports-color': supportsColor,
-        timers: timers,
-        bufferutil: bufferutil,
-        os: os,
-        ws: ws,
-        'fs/promises': fs.promises,
-        'stream/web': steamWeb,
-        http2: http2,
-        console: consoleImport,
-        dgram: dgram,
-        'dns/promises': dnsPromises,
-        module: moduleImport,
-        process: processImport,
-        child_process: child_process,
-        readline: readline,
-
-        'nw.gui': nwGui(),
-        './modules/greenworks-nw-0.35/greenworks': undefined,
-        assert: (() => {
-            const func = function (cond) {
-                if (!cond) throw new Error('assertion failed')
-            }
-            func.ok = func
-            return func
-        })(),
-    }
-
-    const isBun = typeof global.Bun !== 'undefined'
-
-    window.require = global.require = function (name) {
-        if (name.startsWith('node:')) name = name.substring('node:'.length)
-
-        const entry = requireMap[name]
-        if (entry) return entry
-
-        if (isBun) return require(name)
-
-        console.error(`\nunknown require() module: "${name}"\n`)
-        return {}
-        // throw new Error(`unknown require() module: "${name}"`)
-    }
-    window.AudioContext = global.AudioContext = class {
-        constructor() {}
-        createGainNode() {
-            return {
-                gain: { value: 0 },
-                connect() {},
-                disconnect() {},
-            }
-        }
-        createGain() {
-            return this.createGainNode()
-        }
-        createDynamicCompressor() {
-            return {}
-        }
-        getDestination() {}
-        createBufferSource() {
-            return {
-                playbackRate: {},
-                connect() {},
-                noteOn() {},
-            }
-        }
-
-        close() {}
-        createMediaElementSource() {}
-        createMediaStreamDestination() {}
-        createMediaStreamSource() {}
-        createMediaStreamTrackSource() {}
-        getOutputTimestamp() {}
-        resume() {}
-        setSinkId() {}
-        suspend() {}
-    }
-
-    process.versions['node-webkit'] = '0.72.0'
-}
-
-function setupWindow() {
-    /* Set variables from assets/node-webkit.html */
-    window.IG_GAME_SCALE = global.IG_GAME_SCALE = 1
-    window.IG_GAME_CACHE = global.IG_GAME_CACHE = ''
-    window.IG_ROOT = global.IG_ROOT = ''
-    window.IG_WIDTH = global.IG_WIDTH = 568
-    window.IG_HEIGHT = global.IG_HEIGHT = 320
-    window.IG_HIDE_DEBUG = global.IG_HIDE_DEBUG = false
-    window.IG_SCREEN_MODE_OVERRIDE = global.IG_SCREEN_MODE_OVERRIDE = 2
-    window.IG_WEB_AUDIO_BGM = global.IG_WEB_AUDIO_BGM = false
-    window.IG_FORCE_HTML5_AUDIO = global.IG_FORCE_HTML5_AUDIO = false
-    window.LOAD_LEVEL_ON_GAME_START = global.LOAD_LEVEL_ON_GAME_START = null
-    window.IG_GAME_DEBUG = global.IG_GAME_DEBUG = false
-    window.IG_GAME_BETA = global.IG_GAME_BETA = false
-    /* Capture window variables */
-    function captureWindowVar(name) {
-        Object.defineProperty(window, name, {
-            set(v) {
-                delete window[name]
-                Object.defineProperty(window, name, {
-                    writable: true,
-                    value: v,
-                    configurable: true,
-                })
-                global[name] = v
-            },
-            configurable: true,
-        })
-    }
-    const toCapture = [
-        'sc',
-        'ig',
-        'Vec2',
-        'Vec3',
-        'Line2',
-        'KeySpline',
-        'KEY_SPLINES',
-        'assert',
-        'assertContent',
-        'sc',
-        'Constants',
-        'IG_SOUND_VOLUME',
-        'IG_MUSIC_VOLUME',
-        'IG_USE_WEBAUDIO',
-        'IG_SCREEN_MODE',
-        'MENU_ON_GAME_START',
-        'IG_KEEP_WINDOW_FOCUS',
-        'IG_WEB_AUDIO_BGM',
-        'requestAnimationFrame',
-        'IG_ENTITY_KILL_CALL',
-        'IS_IT_CUBAUM',
-        'checkPlayerPos',
-        'testGui',
-        'startCrossCode',
-        'activeMods',
-        'inactiveMods',
-        'Plugin',
-        'versions',
-        'Greenworks',
-        'simplifyResources',
-        'isLocal',
-        'crossnode',
-        'ccmod',
-        /* mod specific */
-        'modmanager',
-        'cc',
-        'nax',
-        'entries',
-        'simplify',
-        'customPlayerMenus',
-    ]
-
-    for (const name of toCapture) {
-        captureWindowVar(name)
-    }
-}
-
-function mockMisc() {
-    window.HTMLElement = global.HTMLElement = function () {}
-    window.name = global.name = ''
-    window.Audio = global.Audio = function (_arg) {
-        return {
-            addEventListener(type, listener) {
-                // console.log(`Audio: addEventListener(${type}, ${listener.toString().replace(/\n/g, '').replace(/ /g, '')})`)
-                if (type == 'canplaythrough') {
-                    setTimeout(() => {
-                        listener.bind(this)()
-                    }, 0)
-                }
-            },
-            removeEventListener(_type, _duno, _boo) {
-                // console.log(`Audio: removeEventListener(${type}, ${duno}, ${boo})`)
-            },
-            load() {
-                // console.log(`Audio: load()`)
-            },
-        }
+declare global {
+    var crossnode: {
+        waitForGamePromise: Promise<void>
+        options: CrossnodeOptions
     }
 }
 
@@ -322,184 +54,20 @@ function runShell() {
     }
 }
 
-let waitForGameResolve
+let waitForGameResolve: (() => void) | undefined
 function injectWaitForGame() {
     ig.Loader.inject({
         finalize() {
             let end = ig.resources.length > 0
             this.parent()
             if (end && ig.ready) {
-                waitForGameResolve()
+                waitForGameResolve?.()
             }
         },
     })
 }
 
-import { Loader } from '../../../ccloader/js/loader.js'
-import { UI } from '../../../ccloader/js/ui.js'
-
-let modloader
-async function ccloaderInit(options) {
-    window.isLocal = true
-    window.location = global.location = document.location
-    window.semver = global.semver = semver
-
-    await import('./patched/ccloader-packed.js')
-    const { ModLoader } = await import('../../../ccloader/js/ccloader.js')
-    const { Filemanager } = await import('../../../ccloader/js/filemanager.js')
-
-    window.caches = global.caches = {
-        async delete() {},
-        async has() {
-            return false
-        },
-        async keys() {
-            return []
-        },
-        async match() {
-            return false
-        },
-        async open() {
-            return {
-                add() {},
-                addAll() {},
-                delete() {},
-                keys() {
-                    return {}
-                },
-                match() {
-                    return false
-                },
-                matchAll() {
-                    return false
-                },
-                put() {},
-            }
-        },
-    }
-    const origFetch = global.fetch
-    window.fetch = global.fetch = function (url) {
-        if (url.startsWith('http')) return origFetch(url)
-        if (!url.startsWith('assets/') && !url.startsWith('/assets/')) {
-            url = 'assets/' + url
-        }
-        url = './' + url
-        return new Promise(async res => {
-            const data = await fs.promises.readFile(url, 'utf8')
-            res({
-                text() {
-                    return data
-                },
-                json() {
-                    return JSON.parse(data)
-                },
-            })
-        })
-    }
-
-    const PatchedFileManager = class extends Filemanager {
-        getAllModPackages() {
-            return []
-        }
-        packedFileExists() {
-            return false
-        }
-        loadImage(path) {
-            return super.loadImage('./' + path.substring('../'.length))
-        }
-        async _loadScript(url, _doc, _type) {
-            return import(`../../${url}`)
-        }
-    }
-    const PatchedUI = class extends UI {
-        _drawMessage() {}
-    }
-
-    const PatchedModLoader = class {
-        _initializeServiceWorker() {}
-        constructor() {
-            console.logToFile = function () {}
-
-            this.filemanager = new PatchedFileManager(this)
-            this.ui = new PatchedUI(this)
-
-            this.loader = new Loader(this.filemanager)
-            this.loader.doc = new DOMParser().parseFromString(
-                `<html>
-                <body>
-                    <div id="status"></div>
-                </body>
-            </html>`,
-                'text/html'
-            )
-
-            this.overlay = document.getElementById('overlay')
-            this.status = document.getElementById('status')
-
-            /** @type {Mod[]} */
-            this.mods = []
-            /** @type {{[name: string]: string}} */
-            this.versions = {}
-            /** @type {string[]} */
-            this.extensions = this.filemanager.getExtensions()
-        }
-    }
-    Object.setPrototypeOf(PatchedModLoader.prototype, ModLoader.prototype)
-
-    modloader = new PatchedModLoader()
-
-    await modloader._buildCrosscodeVersion()
-
-    // await this.loader.initialize()
-
-    await modloader._loadModPackages()
-    if (options.modWhitelist) {
-        options.modWhitelist.push('crossnode', 'Simplify')
-        modloader.mods = modloader.mods.filter(mod => options.modWhitelist.includes(mod.name))
-    }
-
-    modloader._removeDuplicateMods()
-    modloader._orderCheckMods()
-    modloader._registerMods()
-
-    if (!options.quiet)
-        console.log(
-            'MODS:',
-            modloader.mods.map(mod => mod.name)
-        )
-
-    modloader._setupGamewindow()
-
-    await modloader._loadPlugins()
-
-    const Simplify = modloader.mods.find(m => m.name == 'Simplify').pluginInstance
-    /* prevent pattern-fix.js#fixPatters from running */
-    Simplify.prestart = undefined
-    Simplify.postload = function () {
-        this._applyArgs()
-        /* use a modified version of postloadModule.js */
-        return import('./patched/simplify-postloadModule.js')
-    }
-
-    await modloader._executePreload()
-}
-
-async function ccloaderPostload() {
-    await modloader._executePostload()
-}
-
-async function ccloaderPoststart() {
-    await modloader._executeMain()
-    // modloader._fireLoadEvent()
-}
-
-const fileExists = async path =>
-    fs.promises
-        .access(path)
-        .then(() => true)
-        .catch(() => false)
-
-export async function startCrossnode(options) {
+export async function startCrossnode(options: CrossnodeOptions) {
     const launchDate = Date.now()
 
     if (!(await fileExists('favicon.png'))) {
@@ -509,8 +77,8 @@ export async function startCrossnode(options) {
     await initLibs()
 
     mockNwjs()
-    setupWindow()
-    mockMisc()
+    requireFix()
+    setupWindowCapture()
 
     window.crossnode = {
         options,
@@ -520,27 +88,27 @@ export async function startCrossnode(options) {
     let pluginClass
     if (!options.ccloader2) pluginClass = new (await import('./plugin.js')).default()
 
-    if (options.ccloader2) await ccloaderInit(options)
+    const modloader = options.ccloader2 ? await ccloaderInit(options) : undefined
 
     if (pluginClass) pluginClass.preload()
 
     const normalRequire = moduleImport.createRequire(new URL(`file://${process.cwd()}/`))
-    normalRequire(options.gameCompiledJsPath ?? './assets/js/game.compiled.js')
+    normalRequire('./assets/js/game.compiled.js')
 
     injectWaitForGame()
 
     if (options.postload) options.postload()
-    if (options.ccloader2) await ccloaderPostload()
+    if (modloader) await ccloaderPostload(modloader)
     setDocumentLoadingState('complete')
-    if (options.ccloader2) modloader.loader.continue()
+    modloader?.loader.continue()
     if (pluginClass) pluginClass.prestart()
     if (options.prestart) options.prestart()
 
-    await window.startCrossCode()
+    window.startCrossCode()
 
     await window.crossnode.waitForGamePromise
 
-    if (options.ccloader2) await ccloaderPoststart()
+    if (modloader) await ccloaderPoststart(modloader)
     if (options.poststart) options.poststart()
 
     if (!options.quiet) console.log(`Ready (took ${Date.now() - launchDate}ms)`)

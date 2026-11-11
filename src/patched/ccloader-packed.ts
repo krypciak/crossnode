@@ -1,7 +1,5 @@
-/* I only added the last line, nothing else is changed */
-
 const ASSETS_MODS_LENGTH = 13 //'/assets/mods/'.length;
-const CONTENT_TYPES = {
+const CONTENT_TYPES: Record<string, string> = {
     css: 'text/css',
     js: 'text/javascript',
     json: 'application/json',
@@ -12,19 +10,13 @@ const CONTENT_TYPES = {
     htm: 'text/html',
 }
 
-/**
- *  @type {Map<string, JSZip>}
- */
-const jszipCache = new Map()
+declare const JSZip: any
+type JSZip = any
 
-//Not exported because serviceworkers can't use es6 modules
-// eslint-disable-next-line no-unused-vars
-class PackedManager {
-    /**
-     *
-     * @param {string} url
-     */
-    async get(url) {
+const jszipCache = new Map<string, JSZip>()
+
+export class PackedManagerClass {
+    async get(url: string) {
         try {
             const zip = await this._openZip(url)
             const file = zip.file(this._assetPath(url))
@@ -48,17 +40,12 @@ class PackedManager {
         }
     }
 
-    /**
-     *
-     * @param {string} url
-     * @returns {Promise<string[]>}
-     */
-    async getFiles(url) {
+    async getFiles(url: string) {
         const zip = await this._openZip(url)
         const folder = this._openFolder(zip, this._assetPath(url))
 
-        const result = []
-        folder.forEach((relativePath, file) => {
+        const result: string[] = []
+        folder.forEach((relativePath: string, file: any) => {
             if (!file.dir) {
                 result.push(relativePath)
             }
@@ -66,42 +53,24 @@ class PackedManager {
         return result
     }
 
-    /**
-     *
-     * @param {string} url
-     * @returns {Promise<boolean>}
-     */
-    async isDirectory(url) {
+    async isDirectory(url: string) {
         const zip = await this._openZip(url)
         const file = zip.file(this._assetPath(url))
         return file && file.dir
     }
 
-    /**
-     *
-     * @param {string} url
-     * @returns {Promise<boolean>}
-     */
-    async isFile(url) {
+    async isFile(url: string) {
         const zip = await this._openZip(url)
         const file = zip.file(this._assetPath(url))
         return !!file
     }
 
-    /**
-     *
-     * @param {string} url
-     */
-    packedName(url) {
+    packedName(url: string) {
         url = this._normalize(url)
         return decodeURIComponent(url.substring(ASSETS_MODS_LENGTH, url.indexOf('/', ASSETS_MODS_LENGTH)))
     }
 
-    /**
-     *
-     * @param {string} url
-     */
-    async _openZip(url) {
+    async _openZip(url: string) {
         const zip = this._zipPath(url)
         const cached = jszipCache.get(zip)
         if (cached) {
@@ -121,12 +90,7 @@ class PackedManager {
         return result
     }
 
-    /**
-     *
-     * @param {JSZip} root
-     * @param {string} path
-     */
-    _openFolder(root, path) {
+    _openFolder(root: JSZip, path: string) {
         const folders = path.split(/\//g)
         for (const folder of folders) {
             root = root.folder(folder)
@@ -134,38 +98,22 @@ class PackedManager {
         return root
     }
 
-    /**
-     * @param {string} url
-     * @returns {string}
-     */
-    _contentType(url) {
+    _contentType(url: string): string {
         url = this._normalize(url)
         return CONTENT_TYPES[url.substr(url.lastIndexOf('.') + 1)] || 'text/plain'
     }
 
-    /**
-     *
-     * @param {string} url
-     */
-    _zipPath(url) {
+    _zipPath(url: string) {
         url = this._normalize(url)
         return url.substr(0, url.indexOf('/', ASSETS_MODS_LENGTH))
     }
 
-    /**
-     *
-     * @param {string} url
-     */
-    _assetPath(url) {
+    _assetPath(url: string) {
         url = this._normalize(url)
         return url.substr(url.indexOf('/', ASSETS_MODS_LENGTH) + 1)
     }
 
-    /**
-     *
-     * @param {string} url
-     */
-    _normalize(url) {
+    _normalize(url: string) {
         url = url.replace(/\\/g, '/').replace(/\/\//, '/')
         //TODO: resolve absolute paths
         if (!url.startsWith('/')) {
@@ -177,4 +125,12 @@ class PackedManager {
         return url
     }
 }
-window.PackedManager = global.PackedManager = PackedManager
+
+declare global {
+    var PackedManager: typeof PackedManagerClass
+    namespace NodeJS {
+        interface Global {
+            PackedManager: typeof PackedManagerClass
+        }
+    }
+}

@@ -8,10 +8,10 @@
             "node",
             "chrome",
             "jquery",
-            "bun"
+            "bun",
+            "nw.js"
         ],
         "module": "preserve",
-        "rootDir": "./src",
         "moduleResolution": "bundler",
         "allowJs": true,
         "noEmit": true,

@@ -13,7 +13,7 @@ cd assets/mods
 git clone https://github.com/krypciak/crossnode
 cd crossnode
 pnpm install
-sh ./setup.sh # this will ensure your setup is mostly correct
+bun ./setup.ts # this will ensure your setup is mostly correct
 pnpm start
 ```
 You can adjust crossnode settings in `start.js`.  

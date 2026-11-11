@@ -4,6 +4,7 @@
     "type": "module",
     "scripts": {
         "start": "NODE_NO_WARNINGS=1 node start.ts",
+        "setup": "bun setup.ts",
         "format": "oxfmt"
     },
     "devDependencies": {
@@ -12,7 +13,9 @@
         "@types/crypto-js": "^4.2.2",
         "@types/jquery": "^4.0.1",
         "@types/jsdom": "^30.0.0",
+        "@types/jszip": "^3.4.1",
         "@types/node": "^25.9.2",
+        "@types/nw.js": "^0.115.0",
         "@types/semver": "^7.8.0",
         "@types/ws": "^8.18.2",
         "bufferutil": "^4.1.0",
@@ -24,6 +27,8 @@
         "oxfmt": "^0.60.0",
         "semver": "^7.8.2",
         "supports-color": "^10.2.2",
+        "typescript": "^7.0.2",
+        "ultimate-crosscode-typedefs": "github:krypciak/ultimate-crosscode-typedefs",
         "ws": "^8.21.0"
     }
 }
