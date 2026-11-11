@@ -1,7 +1,7 @@
 import type {} from 'ultimate-crosscode-typedefs'
 import { ccloaderInit, ccloaderPostload, ccloaderPoststart } from './ccloader'
-import { initDom, initLibs, setDocumentLoadingState } from './dom'
-import { mockNwjs } from './nwjs-mock'
+import { initDom, setDocumentLoadingState } from './dom'
+import { initLibs, mockNwjs } from './nwjs-mock'
 import { setupWindowCapture } from './window-capture'
 import { requireFix } from './require-fix'
 

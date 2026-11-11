@@ -1,14 +1,24 @@
 import * as fs from 'fs'
+import { Image } from 'canvas'
+import jquery from 'jquery'
+import CryptoJS from 'crypto-js'
+
+import { AsyncLocalStorage } from './localstorage'
 
 export function mockNwjs() {
     nwGui()
     audioFix()
     cachesFix()
     fetchFix()
+    setVars()
+}
 
+function setVars() {
     process.versions['node-webkit'] = '0.72.0'
     // @ts-expect-error
     window.name = global.name = ''
+    // @ts-expect-error
+    global.navigator.appVersion = '4.0'
 }
 
 function nwGui() {
@@ -169,4 +179,25 @@ function fetchFix() {
             } as Response)
         })
     }
+}
+
+export async function initLibs() {
+    global.localStorage = new AsyncLocalStorage({ storagePath: './localStorage.json' })
+    Object.defineProperty(window, 'localStorage', {
+        value: global.localStorage,
+    })
+
+    // @ts-expect-error
+    window.Image = global.Image = Image
+    global.HTMLCanvasElement = window.HTMLCanvasElement
+
+    // @ts-expect-error
+    window.HTMLElement = global.HTMLElement = function () {}
+
+    // @ts-expect-error
+    window.$ = global.$ = jquery(window)
+
+    window.CryptoJS = global.CryptoJS = CryptoJS
+
+    await import('../../../impact/page/js/seedrandom.js')
 }
