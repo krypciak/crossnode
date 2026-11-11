@@ -17,7 +17,9 @@ function setVars() {
     // @ts-expect-error
     window.name = global.name = ''
     // @ts-expect-error
-    global.navigator.appVersion = '4.0'
+    navigator.appVersion = '4.0'
+    // @ts-expect-error
+    navigator.language = 'en-US'
 }
 
 function nwGui() {

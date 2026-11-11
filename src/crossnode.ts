@@ -6,8 +6,8 @@ import { setupWindowCapture } from './window-capture'
 import { requireFix } from './require-fix'
 import { fileExists } from './util'
 
-import moduleImport from 'module'
 import repl from 'repl'
+// const repl = {} as typeof import('repl')
 
 export interface CrossnodeOptions {
     shell?: boolean
@@ -92,8 +92,7 @@ export async function startCrossnode(options: CrossnodeOptions) {
 
     if (pluginClass) pluginClass.preload()
 
-    const normalRequire = moduleImport.createRequire(new URL(`file://${process.cwd()}/`))
-    normalRequire('./assets/js/game.compiled.js')
+    require('../../../js/game.compiled.js')
 
     injectWaitForGame()
 
