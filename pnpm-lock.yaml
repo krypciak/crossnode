@@ -47,6 +47,9 @@ importers:
       happy-dom:
         specifier: ^21.0.4
         version: 21.0.4(bufferutil@4.2.0)
+      jpeg-js:
+        specifier: ^0.4.4
+        version: 0.4.4
       jquery:
         specifier: ^3.7.1
         version: 3.7.1
@@ -56,6 +59,12 @@ importers:
       oxfmt:
         specifier: ^0.60.0
         version: 0.60.0
+      pngjs:
+        specifier: ^7.0.0
+        version: 7.0.0
+      pureimage:
+        specifier: ^0.4.20
+        version: 0.4.20
       semver:
         specifier: ^7.8.6
         version: 7.8.6
@@ -472,6 +481,9 @@ packages:
   isarray@1.0.0:
     resolution: {integrity: sha512-VLghIWNM6ELQzo7zwmcg0NmTVyWKYjvIeM83yjp0wRDTmUnrM678fQbcKBo6n2CJEF0szoG//ytg+TKla89ALQ==}
 
+  jpeg-js@0.4.4:
+    resolution: {integrity: sha512-WZzeDOEtTOBK4Mdsar0IqEU5sMr3vSV2RqkAIzUEV2BHnUfKGyswWFPFwK5EeDo93K3FohSHbLAjj0s1Wzd+dg==}
+
   jquery@3.7.1:
     resolution: {integrity: sha512-m4avr8yL8kmFN8psrbFFFmB/If14iN5o9nw/NgnnM+kybDJpRsAynV2BsfpTYrTRysYUdADVD7CkUUizgkpLfg==}
 
@@ -493,6 +505,10 @@ packages:
     engines: {npm: '>=5.0.0'}
     hasBin: true
 
+  opentype.js@0.4.11:
+    resolution: {integrity: sha512-GthxucX/6aftfLdeU5Ho7o7zmQcC8uVtqdcelVq12X++ndxwBZG8Xb5rFEKT7nEcWDD2P1x+TNuJ70jtj1Mbpw==}
+    hasBin: true
+
   oxfmt@0.60.0:
     resolution: {integrity: sha512-fViX6i+gJuZWY+jI/fnR6WRbRj70GZ9RlCd30MygJrHTUNc4DxvKHWw8vBjMjffv3PgU5qWDR0AzmojQByqaZA==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -509,8 +525,16 @@ packages:
   pako@1.0.11:
     resolution: {integrity: sha512-4hLB8Py4zZce5s4yd9XzopqwVv/yGNhV1Bl8NTmCq1763HeK2+EwVTv+leGeL13Dnh2wfbqowVPXCIO0z4taYw==}
 
+  pngjs@7.0.0:
+    resolution: {integrity: sha512-LKWqWJRhstyYo9pGvgor/ivk2w94eSjE3RGVuzLGlr3NmD8bf7RcYGze1mNdEHRP6TRP6rMuDHk5t44hnTRyow==}
+    engines: {node: '>=14.19.0'}
+
   process-nextick-args@2.0.1:
     resolution: {integrity: sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==}
+
+  pureimage@0.4.20:
+    resolution: {integrity: sha512-YbvmJQgAGbdEJa5p8den46AdZ5Ffa+XMOPdvrRoyYDdkV1i+m/QKgK2xY0QNgs3wY75T3kDQc/X6gQC+tG0lpA==}
+    engines: {node: '>=14.19.0'}
 
   readable-stream@2.3.8:
     resolution: {integrity: sha512-8p0AUk4XODgIewSi0l8Epjs+EVnWiK7NoDIEGU0HhE7+ZyY8D1IMY7odu5lRrFXGg71L15KG8QrPmum45RTtdA==}
@@ -821,6 +845,8 @@ snapshots:
 
   isarray@1.0.0: {}
 
+  jpeg-js@0.4.4: {}
+
   jquery@3.7.1: {}
 
   jszip@3.10.2:
@@ -841,6 +867,8 @@ snapshots:
   node@26.13.0:
     dependencies:
       node-bin-setup: 1.1.4
+
+  opentype.js@0.4.11: {}
 
   oxfmt@0.60.0:
     dependencies:
@@ -868,7 +896,15 @@ snapshots:
 
   pako@1.0.11: {}
 
+  pngjs@7.0.0: {}
+
   process-nextick-args@2.0.1: {}
+
+  pureimage@0.4.20:
+    dependencies:
+      jpeg-js: 0.4.4
+      opentype.js: 0.4.11
+      pngjs: 7.0.0
 
   readable-stream@2.3.8:
     dependencies:

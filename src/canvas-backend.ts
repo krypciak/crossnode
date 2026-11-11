@@ -1,3 +1,6 @@
+import { Image as PureImageImage, createCanvas as createPureImageCanvas } from './canvas-pureimage'
+
+/* vibecoded */
 /**
  * Backend-agnostic canvas entry point.
  *
@@ -27,6 +30,17 @@ interface NativeCanvasModule {
     Image: ImageConstructor
 }
 
+// Porffor's --define replaces this exact member read at compile time, so
+// `--define:process.env.CROSSNODE_CANVAS=true` bakes the backend in. Strings
+// still work, and are also read normally at runtime when no define is used.
+const backendValue: any = process.env.CROSSNODE_CANVAS
+const requestedBackend = typeof backendValue === 'string' ? backendValue.trim().toLowerCase() : backendValue
+
+export const usesPureImageCanvas =
+    requestedBackend === 'pureimage' || requestedBackend === 'pure' || requestedBackend === '1' || requestedBackend === true || requestedBackend === 1
+
+export const canvasBackend: 'native' | 'pureimage' = usesPureImageCanvas ? 'pureimage' : 'native'
+
 let nativeModule: NativeCanvasModule | null = null
 
 const loadNativeModule = (): NativeCanvasModule => {
@@ -42,9 +56,11 @@ const loadNativeModule = (): NativeCanvasModule => {
 }
 
 export const createCanvas = (width: number, height: number): Canvas => {
+    if (usesPureImageCanvas) return createPureImageCanvas(width, height)
     return loadNativeModule().createCanvas(width, height)
 }
 
 export const getImageClass = (): ImageConstructor => {
+    if (usesPureImageCanvas) return PureImageImage as unknown as ImageConstructor
     return loadNativeModule().Image
 }
