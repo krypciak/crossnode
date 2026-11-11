@@ -20,6 +20,11 @@ export function initDom(): void {
             enableImageFileLoading: true,
             enableFileSystemHttpRequests: true,
         },
+        console: {
+            ...console,
+            // make it configurable
+            error: (...args) => console.error(...args),
+        },
     })
     globalThis.window = win as unknown as typeof globalThis.window
 

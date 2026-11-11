@@ -28,6 +28,8 @@ export default class CrossNode {
                 imageSrcDescriptor.set.call(this, path)
             },
         })
+
+        window.Worker = class { postMessage() {} }
     }
 
     prestart() {
