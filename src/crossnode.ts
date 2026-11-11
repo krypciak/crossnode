@@ -5,6 +5,7 @@ import { initLibs, mockNwjs } from './nwjs-mock'
 import { setupWindowCapture } from './window-capture'
 import { requireFix } from './require-fix'
 import { fileExists } from './util'
+import { patchVarCondition } from './var-condition'
 
 // import repl from 'repl'
 const repl = {} as typeof import('repl')
@@ -93,6 +94,7 @@ export async function startCrossnode(options: CrossnodeOptions) {
     if (pluginClass) pluginClass.preload()
 
     require('../../../js/game.compiled.js')
+    patchVarCondition()
 
     injectWaitForGame()
 
