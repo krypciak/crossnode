@@ -7,15 +7,17 @@ startCrossnode({
     modWhitelist: [
         'ccmodmanager',
 
-        'cc-alybox',
-        'cc-variable-charge-time',
-
-        'xenons-playable-classes',
-        'menu-ui-replacer',
-        'extension-asset-preloader',
-        'extendable-severed-heads',
-
-        'input-api',
+        // 'cc-alybox',
+        // 'cc-variable-charge-time',
+        //
+        // 'xenons-playable-classes',
+        // 'menu-ui-replacer',
+        // 'extension-asset-preloader',
+        // 'extendable-severed-heads',
+        //
+        // 'input-api',
     ],
     extensionWhitelist: ['post-game'],
+    // writeImage: true,
+    skipTitlescreen: true,
 })
