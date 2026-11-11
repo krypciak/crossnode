@@ -1,0 +1,23 @@
+diff --git a/lib/query-selector/QuerySelector.js b/lib/query-selector/QuerySelector.js
+index a4204c5626b2df5b3017004a444ae638bd8c3917..d52138eece74a97cf1daa502087873766dbbd70d 100644
+--- a/lib/query-selector/QuerySelector.js
++++ b/lib/query-selector/QuerySelector.js
+@@ -13,7 +13,6 @@ const INVALID_SELECTOR_REGEXP = /^[.#\[]?\d|[.#]$/;
+  * @class QuerySelector
+  */
+ export default class QuerySelector {
+-    static globalMatchFunction = this.matches.bind(this);
+     /**
+      * Finds elements based on a query selector.
+      *
+@@ -550,4 +549,10 @@ export default class QuerySelector {
+         }
+     }
+ }
++
++// Porffor evaluates static field initializers before the class methods are
++// attached, so `this.matches` is undefined inside the class body. Bind it once
++// the class exists instead.
++QuerySelector.globalMatchFunction = QuerySelector.matches.bind(QuerySelector);
++
+ //# sourceMappingURL=QuerySelector.js.map

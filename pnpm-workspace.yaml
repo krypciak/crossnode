@@ -1,3 +1,5 @@
 allowBuilds:
   bufferutil: true
   node: true
+patchedDependencies:
+  happy-dom@21.0.4: patches/happy-dom@21.0.4.patch

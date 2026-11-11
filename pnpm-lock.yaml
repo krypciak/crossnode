@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  happy-dom@21.0.4: 265025117df76fe43f5ff6586383fda840cb6dfb2a1d3fcd618c7b563d76074e
+
 importers:
 
   .:
@@ -46,7 +49,7 @@ importers:
         version: 4.2.0
       happy-dom:
         specifier: ^21.0.4
-        version: 21.0.4(bufferutil@4.2.0)
+        version: 21.0.4(patch_hash=265025117df76fe43f5ff6586383fda840cb6dfb2a1d3fcd618c7b563d76074e)(bufferutil@4.2.0)
       jpeg-js:
         specifier: ^0.4.4
         version: 0.4.4
@@ -826,7 +829,7 @@ snapshots:
 
   entities@7.0.1: {}
 
-  happy-dom@21.0.4(bufferutil@4.2.0):
+  happy-dom@21.0.4(patch_hash=265025117df76fe43f5ff6586383fda840cb6dfb2a1d3fcd618c7b563d76074e)(bufferutil@4.2.0):
     dependencies:
       '@types/node': 25.9.9
       '@types/whatwg-mimetype': 3.0.2
