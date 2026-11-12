@@ -93,22 +93,31 @@ export async function startCrossnode(options: CrossnodeOptions) {
 
     if (pluginClass) pluginClass.preload()
 
+    console.log('require game.compiled.js')
     require('../../../js/game.compiled.js')
+    console.log('patchVarCondition')
     patchVarCondition()
 
+    console.log('injectWaitForGame')
     injectWaitForGame()
 
     if (options.postload) options.postload()
+    console.log('postload')
     if (modloader) await ccloaderPostload(modloader)
     setDocumentLoadingState('complete')
+    console.log('loader.continue')
     modloader?.loader.continue()
     if (pluginClass) pluginClass.prestart()
+    console.log('prestart')
     if (options.prestart) options.prestart()
 
+    console.log('startCrossCode')
     window.startCrossCode()
 
+    console.log('waiting')
     await window.crossnode.waitForGamePromise
 
+    console.log('poststart')
     if (modloader) await ccloaderPoststart(modloader)
     if (options.poststart) options.poststart()
 
