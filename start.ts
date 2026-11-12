@@ -23,4 +23,5 @@ startCrossnode({
     extensionWhitelist: ['post-game'],
     writeImage: true,
     skipTitlescreen: true,
+    patchVarCondition: true,
 })

@@ -119,7 +119,7 @@ function tryParseModCheck(source: string, i: number): { modId: string; end: numb
     return { modId, end: j }
 }
 
-function isModActive(modId: string): boolean {
+export function isModActive(modId: string): boolean {
     return !!(window as any).activeMods.find((m: any) => m.name == modId)
 }
 
@@ -317,7 +317,7 @@ function evaluateNode(node: VarNode, getVar: (path: string) => unknown): unknown
     throw new Error(`Unsupported operator '${node.op}'`)
 }
 
-function conditionToFunction(condition: string | undefined): { source: string; vars: string[]; func: () => unknown } {
+export function conditionToFunction(condition: string | undefined): { source: string; vars: string[]; func: () => unknown } {
     condition = (condition ?? '').trim()
     if (!condition) condition = 'true'
 
@@ -340,6 +340,7 @@ function conditionToFunction(condition: string | undefined): { source: string; v
     }
     return { source: condition, vars, func }
 }
+
 // replace ig.VarCondition's Function-based setCondition with the interpreter
 export function patchVarCondition(): void {
     const ig = (globalThis as any).ig

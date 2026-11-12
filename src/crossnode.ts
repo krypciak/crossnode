@@ -6,6 +6,7 @@ import { setupWindowCapture } from './window-capture'
 import { requireFix } from './require-fix'
 import { fileExists } from './util'
 import { patchVarCondition } from './var-condition'
+import { patchAlybox } from './alybox-patch'
 
 export interface CrossnodeOptions {
     shell?: boolean
@@ -22,6 +23,8 @@ export interface CrossnodeOptions {
 
     ccloader2?: boolean
     modWhitelist?: string[]
+
+    patchVarCondition?: boolean
 
     fps?: number
     skipFrameWait?: boolean
@@ -93,20 +96,23 @@ export async function startCrossnode(options: CrossnodeOptions) {
 
     console.log('require game.compiled.js')
     require('../../../js/game.compiled.js')
-    console.log('patchVarCondition')
-    patchVarCondition()
 
-    console.log('injectWaitForGame')
+    if (options.patchVarCondition) {
+        patchVarCondition()
+        patchAlybox()
+    }
+
     injectWaitForGame()
 
     if (options.postload) options.postload()
     console.log('postload')
     if (modloader) await ccloaderPostload(modloader)
     setDocumentLoadingState('complete')
-    console.log('loader.continue')
-    modloader?.loader.continue()
-    if (pluginClass) pluginClass.prestart()
+
     console.log('prestart')
+    modloader?.loader.continue()
+
+    if (pluginClass) pluginClass.prestart()
     if (options.prestart) options.prestart()
 
     console.log('startCrossCode')
