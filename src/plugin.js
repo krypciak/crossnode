@@ -29,7 +29,9 @@ export default class CrossNode {
             },
         })
 
-        window.Worker = class { postMessage() {} }
+        window.Worker = class {
+            postMessage() {}
+        }
     }
 
     prestart() {

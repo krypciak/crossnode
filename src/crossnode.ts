@@ -42,7 +42,11 @@ declare global {
     }
 }
 
+const isPorffor = navigator.userAgent.startsWith('Porffor')
+
 async function runShell() {
+    if (isPorffor) return
+
     const repl = await import('repl')
     if (repl?.start) {
         const server = repl.start({
