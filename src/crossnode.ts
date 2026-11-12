@@ -7,9 +7,6 @@ import { requireFix } from './require-fix'
 import { fileExists } from './util'
 import { patchVarCondition } from './var-condition'
 
-// import repl from 'repl'
-const repl = {} as typeof import('repl')
-
 export interface CrossnodeOptions {
     shell?: boolean
     writeImage?: boolean
@@ -42,7 +39,8 @@ declare global {
     }
 }
 
-function runShell() {
+async function runShell() {
+    const repl = await import('repl')
     if (repl?.start) {
         const server = repl.start({
             prompt: 'crosscode > ',
@@ -123,5 +121,5 @@ export async function startCrossnode(options: CrossnodeOptions) {
 
     if (!options.quiet) console.log(`Ready (took ${Date.now() - launchDate}ms)`)
 
-    if (options.shell) runShell()
+    if (options.shell) await runShell()
 }
