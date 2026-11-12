@@ -1,7 +1,7 @@
 import * as fs from 'fs'
-import jquery from 'jquery'
 import CryptoJS from 'crypto-js'
 
+import { createJQuery } from './jquery-stub'
 import { AsyncLocalStorage } from './localstorage'
 
 export function mockNwjs() {
@@ -193,8 +193,9 @@ export async function initLibs() {
     // @ts-expect-error
     window.HTMLElement = global.HTMLElement = function () {}
 
-    // @ts-expect-error
-    window.$ = global.$ = jquery(window)
+    const jq = createJQuery(window) as unknown as JQueryStatic
+    ;(window as any).$ = (global as any).$ = jq
+    ;(window as any).jQuery = (global as any).jQuery = jq
 
     window.CryptoJS = global.CryptoJS = CryptoJS
 
