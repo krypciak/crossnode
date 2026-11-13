@@ -46,8 +46,7 @@ export function initDom(): void {
     setDocumentLoadingState('loading')
 
     const NapiImage = getImageClass() as unknown as typeof globalThis.Image
-    window.Image = NapiImage
-    globalThis.Image = NapiImage
+    globalThis.Image = window.Image = NapiImage
 }
 
 function fixXMLHttpRequest(): void {

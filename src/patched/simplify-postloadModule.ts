@@ -298,6 +298,7 @@ export class SimplifyResources {
                 super.src = url
             }
         }
+        globalThis.Image = window.Image
     }
 
     _stripAssets(path: string) {
