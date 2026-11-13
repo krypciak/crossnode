@@ -90,7 +90,7 @@ export async function startCrossnode(options: CrossnodeOptions) {
     log('startCrossCode')
     window.startCrossCode()
 
-    log('waiting')
+    log('loading resources')
     await window.crossnode.waitForGamePromise
 
     log('poststart')

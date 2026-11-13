@@ -21,6 +21,7 @@ export default class CrossNode {
         injectResourceLoadFixes()
         disableSoundSystem()
         injectSkipTitleScreen()
+        addResourceLoadingLogs()
         imageWrite()
     }
 
@@ -261,6 +262,23 @@ function injectSkipTitleScreen() {
                 },
                 hide: () => {},
             }
+        },
+    })
+}
+
+function addResourceLoadingLogs() {
+    if (!options.debugLogs) return
+
+    const G = '\x1b[32m' // green
+    const R = '\x1b[31m' // red
+    const X = '\x1b[0m' // reset
+
+    ig.Loader.inject({
+        _loadCallback(type, path, success) {
+            const txt = (success ? G + `.` : R + `F`) + X
+            process.stdout.write(txt)
+
+            return this.parent(type, path, success)
         },
     })
 }
