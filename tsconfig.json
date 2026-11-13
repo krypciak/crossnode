@@ -24,7 +24,6 @@
         "experimentalDecorators": true,
         "resolveJsonModule": true,
         "noUncheckedSideEffectImports": true,
-        "allowImportingTsExtensions": false,
-        "erasableSyntaxOnly": true
+        "allowImportingTsExtensions": false
     }
 }

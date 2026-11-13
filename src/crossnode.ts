@@ -42,22 +42,16 @@ declare global {
     }
 }
 
-const isPorffor = navigator.userAgent.startsWith('Porffor')
-
 async function runShell() {
-    if (isPorffor) return
-
-    const repl = await import('repl')
-    if (repl?.start) {
-        const server = repl.start({
-            prompt: 'crosscode > ',
-            useGlobal: true,
-            ignoreUndefined: true,
-        })
-        server.on('exit', () => {
-            process.exit()
-        })
-    }
+    const repl: typeof import('repl') = (0, eval)(`require('repl')`)
+    const server = repl.start({
+        prompt: 'crosscode > ',
+        useGlobal: true,
+        ignoreUndefined: true,
+    })
+    server.on('exit', () => {
+        process.exit()
+    })
 }
 
 let waitForGameResolve: (() => void) | undefined

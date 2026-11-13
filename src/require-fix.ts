@@ -32,6 +32,10 @@ import dnsPromises from 'dns/promises'
 import moduleImport from 'module'
 import processImport from 'process'
 import readline from 'readline'
+import { isPorffor } from './util'
+import { createFakeReplModuleWithSimpleRepl } from './simple-repl'
+
+const repl = isPorffor() ? createFakeReplModuleWithSimpleRepl() : await import('repl')
 
 export function requireFix() {
     const requireMap: Record<string, any> = {
@@ -68,6 +72,7 @@ export function requireFix() {
         process: processImport,
         child_process: child_process,
         readline: readline,
+        repl: repl,
 
         'nw.gui': window.nw,
         './modules/greenworks-nw-0.35/greenworks': undefined,

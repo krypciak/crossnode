@@ -6,3 +6,7 @@ export async function fileExists(path: string) {
         .then(() => true)
         .catch(() => false)
 }
+
+export function isPorffor() {
+    return navigator.userAgent.startsWith('Porffor')
+}
