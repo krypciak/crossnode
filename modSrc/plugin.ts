@@ -26,6 +26,7 @@ export default class CrossNode {
     }
 
     poststart() {
+        console.log("poststart")
         autoEnterGame()
     }
 }
@@ -236,6 +237,7 @@ function disableSoundSystem() {
 }
 
 function injectSkipTitleScreen() {
+    if (options.autoEnterGame) options.skipTitlescreen = true
     if (!options.skipTitlescreen) return
 
     sc.TitleScreenGui.inject({
@@ -341,26 +343,13 @@ function imageWrite() {
 }
 
 function autoEnterGame() {
-    if (!options.autoEnterGame) options.skipTitlescreen = true
+    if (!options.autoEnterGame) return
 
-    setTimeout(() => {
-        function keyPress(time: number, keyCode: number) {
-            return [
-                { time, event: 'keydown', opts: { keyCode } },
-                { time: 10, event: 'keyup', opts: { keyCode } },
-            ]
-        }
-        const actions = [...keyPress(2e3, 40), ...keyPress(10, 13), ...keyPress(5e3, 13), ...keyPress(500, 89), ...keyPress(10, 13)]
-        let i = 0
+    sc.commonEvents.events = {}
+    for (const key in sc.commonEvents.eventsByType) {
+        sc.commonEvents.eventsByType[key as keyof typeof sc.COMMON_EVENT_TYPE] = []
+    }
 
-        function nextAction() {
-            const act = actions[i++]
-            if (!act) return
-            setTimeout(() => {
-                window.dispatchEvent(new window.KeyboardEvent(act.event, act.opts))
-                nextAction()
-            }, act.time || 0)
-        }
-        nextAction()
-    }, 3e3)
+    const i = sc.savePreset.slots.findIndex(s => s.path == '3-autumn-rise')
+    sc.savePreset.load(i)
 }

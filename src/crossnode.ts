@@ -95,6 +95,7 @@ export async function startCrossnode(options: CrossnodeOptions) {
 
     log('poststart')
     if (modloader) await ccloaderPoststart(modloader)
+    if (pluginClass) pluginClass.poststart()
     if (options.poststart) options.poststart()
 
     if (!options.quiet) console.log(`Ready (took ${Date.now() - launchDate}ms)`)

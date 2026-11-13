@@ -24,5 +24,6 @@ startCrossnode({
     writeImage: true,
     skipTitlescreen: true,
     patchVarCondition: true,
-    debugLogs: true
+    debugLogs: true,
+    autoEnterGame: true
 })
