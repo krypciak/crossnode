@@ -2,7 +2,7 @@ import * as semver from 'semver'
 
 import { PackedManagerClass } from './patched/ccloader-packed'
 import type { Mod } from '../../../../ccloader/js/mod'
-import type { CrossnodeOptions } from './crossnode'
+import type { CrossnodeOptions } from './types'
 import { importCCLoaderClasses } from './ccloader-imports'
 import { importModScript, importModPlugin } from './mod-import'
 import { SimplifyResources } from './patched/simplify-postloadModule'

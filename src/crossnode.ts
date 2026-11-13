@@ -7,42 +7,7 @@ import { requireFix } from './require-fix'
 import { fileExists } from './util'
 import { patchVarCondition } from './var-condition'
 import { patchAlybox } from './alybox-patch'
-
-export interface CrossnodeOptions {
-    shell?: boolean
-    writeImage?: boolean
-    writeImageInterval?: number
-    writeImageInstanceinator?: boolean
-    printImageError?: boolean
-    skipTitlescreen?: boolean
-    autoEnterGame?: boolean
-    quiet?: boolean
-
-    nukeImageStack?: boolean
-    extensionWhitelist?: string[]
-
-    ccloader2?: boolean
-    modWhitelist?: string[]
-
-    patchVarCondition?: boolean
-
-    fps?: number
-    skipFrameWait?: boolean
-
-    debugLogs?: boolean
-
-    preload?: () => void
-    postload?: () => void
-    prestart?: () => void
-    poststart?: () => void
-}
-
-declare global {
-    var crossnode: {
-        waitForGamePromise: Promise<void>
-        options: CrossnodeOptions
-    }
-}
+import type { CrossnodeOptions } from './types'
 
 async function runShell() {
     const repl: typeof import('repl') = (0, eval)(`require('repl')`)
