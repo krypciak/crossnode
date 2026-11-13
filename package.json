@@ -27,9 +27,7 @@
         "semver": "^7.8.6",
         "supports-color": "^10.2.2",
         "typescript": "^7.0.2",
-        "ws": "^8.22.2"
-    },
-    "dependencies": {
+        "ws": "^8.22.2",
         "@types/chrome": "^0.1.43",
         "@types/jquery": "^4.0.1",
         "@types/node": "^25.9.9",

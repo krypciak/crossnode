@@ -10,19 +10,6 @@ patchedDependencies:
 importers:
 
   .:
-    dependencies:
-      '@types/chrome':
-        specifier: ^0.1.43
-        version: 0.1.43
-      '@types/jquery':
-        specifier: ^4.0.1
-        version: 4.0.1
-      '@types/node':
-        specifier: ^25.9.9
-        version: 25.9.9
-      ultimate-crosscode-typedefs:
-        specifier: github:krypciak/ultimate-crosscode-typedefs
-        version: https://codeload.github.com/krypciak/ultimate-crosscode-typedefs/tar.gz/12d912dd735339feee4d1619ad96e77e73b472cb
     devDependencies:
       '@napi-rs/canvas':
         specifier: ^1.1.1
@@ -30,12 +17,21 @@ importers:
       '@types/bun':
         specifier: ^1.4.4
         version: 1.4.4
+      '@types/chrome':
+        specifier: ^0.1.43
+        version: 0.1.43
       '@types/crypto-js':
         specifier: ^4.2.2
         version: 4.2.2
+      '@types/jquery':
+        specifier: ^4.0.1
+        version: 4.0.1
       '@types/jszip':
         specifier: ^3.4.1
         version: 3.4.1
+      '@types/node':
+        specifier: ^25.9.9
+        version: 25.9.9
       '@types/nw.js':
         specifier: ^0.115.0
         version: 0.115.0
@@ -78,6 +74,9 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
+      ultimate-crosscode-typedefs:
+        specifier: github:krypciak/ultimate-crosscode-typedefs
+        version: https://codeload.github.com/krypciak/ultimate-crosscode-typedefs/tar.gz/12d912dd735339feee4d1619ad96e77e73b472cb
       ws:
         specifier: ^8.22.2
         version: 8.22.2(bufferutil@4.2.0)
