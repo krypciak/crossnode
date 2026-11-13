@@ -1,8 +1,8 @@
-const fs: typeof import('fs') = (0, eval)(`require('fs')`)
 import type {} from '../src/crossnode'
 import type { NapiCanvasAdapter } from '../src/napi-canvas-adapter'
 
 const root = process.cwd() + '/assets/'
+const fs: typeof import('fs') = (0, eval)(`require('fs')`)
 
 const { options } = window.crossnode
 
@@ -10,318 +10,339 @@ export default class CrossNode {
     preload() {
         if (!window.crossnode) return
 
-        /* mute the "INIT FULLSCREEN VALUE true" text */
-        localStorage.setItem('IG_FULLSCREEN', '')
-
-        const imageSrcDescriptor = Object.getOwnPropertyDescriptor(Image.prototype, 'src')!
-        Object.defineProperty(Image.prototype, 'src', {
-            configurable: true,
-            get() {
-                return imageSrcDescriptor.get!.call(this)
-            },
-            set(path) {
-                if (!path.startsWith('data:') && !path.startsWith('http')) {
-                    path = ig.getFilePath(path)
-                    if (options.ccloader2 && window.simplifyResources1) {
-                        path = window.simplifyResources1._applyAssetOverrides(path)
-                    }
-                    path = root + path
-                }
-                imageSrcDescriptor.set!.call(this, path)
-            },
-        })
-
-        window.Worker = class {
-            postMessage() {}
-        } as any
+        imageFixPreload()
+        preloadMisc()
     }
 
     prestart() {
         if (!window.crossnode) return
 
-        /* Fix resource loading */
+        injectImageFix()
+        injectResourceLoadFixes()
+        disableSoundSystem()
+        injectSkipTitleScreen()
+        imageWrite()
+    }
 
-        ig.getFilePath = function (a) {
-            a && (a = a.trim())
-            const res = ig.fileForwarding[a] ? ig.fileForwarding[a] : a
-            return res
-            // return `file://${res}`
-        }
+    poststart() {
+        autoEnterGame()
+    }
+}
 
-        if (options.nukeImageStack) {
-            ig.perf.draw = false
-            ig.perf.weather = false
-            ig.perf.lighting = false
-
-            ig.ImagePattern.inject({
-                initBuffer() {},
-            })
-            ig.Font.inject({
-                _loadMetrics() {},
-            })
-            ig.NinePatch.inject({
-                draw() {},
-                drawComposite() {},
-            })
-            ig.Weather.inject({
-                updateWeather() {},
-            })
-        }
-        const emptyImg = new Image()
-        // 1x1 empty
-        emptyImg.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4AWJiYGBgAAAAAP//XRcpzQAAAAZJREFUAwAADwADJDd96QAAAABJRU5ErkJggg=='
-
-        ig.Image.inject({
-            loadInternal() {
-                if (options.nukeImageStack) {
-                    this.data = emptyImg
-                    this.loadingFinished(true)
-                    return
+function imageFixPreload() {
+    const imageSrcDescriptor = Object.getOwnPropertyDescriptor(Image.prototype, 'src')!
+    Object.defineProperty(Image.prototype, 'src', {
+        configurable: true,
+        get() {
+            return imageSrcDescriptor.get!.call(this)
+        },
+        set(path) {
+            if (!path.startsWith('data:') && !path.startsWith('http')) {
+                path = ig.getFilePath(path)
+                if (options.ccloader2 && window.simplifyResources1) {
+                    path = window.simplifyResources1._applyAssetOverrides(path)
                 }
-                this.data = new Image()
-                this.data.onload = this.onload.bind(this)
-                this.data.onerror = this.onerror.bind(this)
+                path = root + path
+            }
+            imageSrcDescriptor.set!.call(this, path)
+        },
+    })
+}
 
-                const path = ig.root + this.path.trim() + ig.getCacheSuffix()
-                this.data.src = path
-            },
-            onerror(e) {
-                if (options.printImageError) {
-                    console.log('Image error!', this.data.src, e)
-                }
-                this.data = new Image()
-                this.onload()
-            },
-        })
-        ig.Lang.inject({
-            loadInternal() {
-                for (var a = 0; a < ig.langFileList.length; ++a) {
-                    var b = ig.root + ig.langFileList[a].toPath('data/lang/', '.' + ig.currentLang + '.json')
-                    $.ajax({ dataType: 'json', url: ig.getFilePath(b + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
-                }
-                this._doCallback()
-            },
-        })
-        ig.GlobalSettings.inject({
-            loadInternal: function () {
-                $.ajax({
-                    dataType: 'json',
-                    url: ig.getFilePath(ig.root + 'data/global-settings.json' + ig.getCacheSuffix()),
-                    context: this,
-                    success: this.onload.bind(this),
-                    error: this.onerror.bind(this),
-                })
-            },
-        })
-        ig.TileInfoList.inject({
-            loadInternal() {
-                $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.TILEINFO_FILE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
-            },
-        })
+function preloadMisc() {
+    /* mute the "INIT FULLSCREEN VALUE true" text */
+    localStorage.setItem('IG_FULLSCREEN', '')
 
-        ig.ExtensionList.inject({
-            _getExtensionFolder() {
-                return root + 'extension/'
-            },
-            loadInternal() {
-                if (options.extensionWhitelist && options.extensionWhitelist.length == 0) {
-                    this.onDirRead(true as any, [])
-                } else {
-                    fs.readdir(this._getExtensionFolder(), this.onDirRead.bind(this))
-                }
-            },
-            onExtensionListLoaded(list) {
-                if (options.extensionWhitelist) {
-                    list = list.filter(ext => options.extensionWhitelist!.includes(ext))
-                }
+    window.Worker = class {
+        postMessage() {}
+    } as any
+}
 
-                const back = console.log
-                console.log = function () {}
-                this.parent(list)
-                console.log = back
+function injectImageFix() {
+    if (options.nukeImageStack) {
+        ig.perf.draw = false
+        ig.perf.weather = false
+        ig.perf.lighting = false
 
-                if (!options.quiet && (!options.extensionWhitelist || options.extensionWhitelist.length > 0)) {
-                    console.log('%cEXTENSIONS:%c', 'color:#339966', '', list)
-                }
-            },
+        ig.ImagePattern.inject({
+            initBuffer() {},
         })
-        ig.Database.inject({
-            loadInternal() {
-                $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.DATABASE_FILE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
-            },
+        ig.Font.inject({
+            _loadMetrics() {},
         })
-        ig.Terrain.inject({
-            loadInternal() {
-                $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.TERRAIN_FILE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
-            },
+        ig.NinePatch.inject({
+            draw() {},
+            drawComposite() {},
         })
-        sc.VerionChangeLog.inject({
-            loadInternal() {
-                $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.CHANGE_LOG + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
-            },
+        ig.Weather.inject({
+            updateWeather() {},
         })
-        sc.Inventory.inject({
-            loadInternal() {
-                $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.ITEM_DATABASE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
-            },
-        })
-        sc.SkillTree.inject({
-            loadInternal() {
-                $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.SKILL_TREE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
-            },
-        })
-        sc.CreditSectionLoadable.inject({
-            loadInternal(name) {
-                $.ajax({
-                    dataType: 'json',
-                    url: ig.getFilePath(ig.root + name.toPath('data/credits/', '.json') + ig.getCacheSuffix()),
-                    context: this,
-                    success: this.onload.bind(this),
-                    error: this.onerror.bind(this),
-                })
-            },
-        })
+    }
 
-        ig.$ = function (selector) {
-            // /* weird */ if (a == '#canvas') return canvas
-            return selector.charAt(0) == '#' ? document.getElementById(selector.substring(1)) : document.getElementsByTagName(selector)
-        }
+    const emptyImg = new Image()
+    // 1x1 empty
+    emptyImg.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4AWJiYGBgAAAAAP//XRcpzQAAAAZJREFUAwAADwADJDd96QAAAABJRU5ErkJggg=='
 
-        ig.MapSoundEntry.inject({
-            start() {
+    ig.Image.inject({
+        loadInternal() {
+            if (options.nukeImageStack) {
+                this.data = emptyImg
+                this.loadingFinished(true)
                 return
-            },
-            stop() {
-                return
-            },
-        })
-        ig.Sound.enabled = false
-        const emptySoundEntry = {
-            duration: 4.366666666666666,
-            length: 209600,
-            numberOfChannels: 2,
-            sampleRate: 48000,
-        }
-        ig.SoundManager.inject({
-            init() {
-                this.format = { ext: 'ogg', mime: 'audio/ogg; codecs=vorbis' }
-                this.parent()
-                this._createWebAudioContext()
-            },
-            loadWebAudio(path, loadCallback) {
-                ig.soundManager.buffers[path] = emptySoundEntry as AudioBuffer
-                loadCallback?.(path, true)
-            },
-        })
+            }
+            this.data = new Image()
+            this.data.onload = this.onload.bind(this)
+            this.data.onerror = this.onerror.bind(this)
 
-        if (options.autoEnterGame) {
-            options.skipTitlescreen = true
-            setTimeout(() => {
-                function keyPress(time: number, keyCode: number) {
-                    return [
-                        { time, event: 'keydown', opts: { keyCode } },
-                        { time: 10, event: 'keyup', opts: { keyCode } },
-                    ]
-                }
-                const actions = [...keyPress(2e3, 40), ...keyPress(10, 13), ...keyPress(5e3, 13), ...keyPress(500, 89), ...keyPress(10, 13)]
-                let i = 0
+            const path = ig.root + this.path.trim() + ig.getCacheSuffix()
+            this.data.src = path
+        },
+        onerror(e) {
+            if (options.printImageError) {
+                console.log('Image error!', this.data.src, e)
+            }
+            this.data = new Image()
+            this.onload()
+        },
+    })
+}
 
-                function nextAction() {
-                    const act = actions[i++]
-                    if (!act) return
-                    setTimeout(() => {
-                        window.dispatchEvent(new window.KeyboardEvent(act.event, act.opts))
-                        nextAction()
-                    }, act.time || 0)
-                }
-                nextAction()
-            }, 3e3)
-        }
+function injectResourceLoadFixes() {
+    ig.getFilePath = function (a) {
+        a && (a = a.trim())
+        const res = ig.fileForwarding[a] ? ig.fileForwarding[a] : a
+        return res
+        // return `file://${res}`
+    }
 
-        /* Skip title screen */
-        if (options.skipTitlescreen) {
-            sc.TitleScreenGui.inject({
-                init(...args) {
-                    this.parent(...args)
+    ig.Lang.inject({
+        loadInternal() {
+            for (var a = 0; a < ig.langFileList.length; ++a) {
+                var b = ig.root + ig.langFileList[a].toPath('data/lang/', '.' + ig.currentLang + '.json')
+                $.ajax({ dataType: 'json', url: ig.getFilePath(b + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
+            }
+            this._doCallback()
+        },
+    })
+    ig.GlobalSettings.inject({
+        loadInternal: function () {
+            $.ajax({
+                dataType: 'json',
+                url: ig.getFilePath(ig.root + 'data/global-settings.json' + ig.getCacheSuffix()),
+                context: this,
+                success: this.onload.bind(this),
+                error: this.onerror.bind(this),
+            })
+        },
+    })
+    ig.TileInfoList.inject({
+        loadInternal() {
+            $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.TILEINFO_FILE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
+        },
+    })
 
-                    this.introGui.timeLine = [{ time: 0, end: true }]
-                    this.bgGui.parallax.addLoadListener({
-                        onLoadableComplete: () => {
-                            let { timeLine } = this.bgGui
-                            if (!timeLine) return
-                            // @ts-expect-error
-                            let idx = timeLine.findIndex(item => item.time > 0)
-                            if (idx < 0) idx = timeLine.length
-                            timeLine.splice(idx, 0, { time: 0, goto: 'INTRO_SKIP_NOSOUND' })
-                        },
-                    })
-                    this.removeChildGui(this.startGui)
+    ig.ExtensionList.inject({
+        _getExtensionFolder() {
+            return root + 'extension/'
+        },
+        loadInternal() {
+            if (options.extensionWhitelist && options.extensionWhitelist.length == 0) {
+                this.onDirRead(true as any, [])
+            } else {
+                fs.readdir(this._getExtensionFolder(), this.onDirRead.bind(this))
+            }
+        },
+        onExtensionListLoaded(list) {
+            if (options.extensionWhitelist) {
+                list = list.filter(ext => options.extensionWhitelist!.includes(ext))
+            }
+
+            const back = console.log
+            console.log = function () {}
+            this.parent(list)
+            console.log = back
+
+            if (!options.quiet && (!options.extensionWhitelist || options.extensionWhitelist.length > 0)) {
+                console.log('%cEXTENSIONS:%c', 'color:#339966', '', list)
+            }
+        },
+    })
+    ig.Database.inject({
+        loadInternal() {
+            $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.DATABASE_FILE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
+        },
+    })
+    ig.Terrain.inject({
+        loadInternal() {
+            $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.TERRAIN_FILE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
+        },
+    })
+    sc.VerionChangeLog.inject({
+        loadInternal() {
+            $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.CHANGE_LOG + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
+        },
+    })
+    sc.Inventory.inject({
+        loadInternal() {
+            $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.ITEM_DATABASE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
+        },
+    })
+    sc.SkillTree.inject({
+        loadInternal() {
+            $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.SKILL_TREE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
+        },
+    })
+    sc.CreditSectionLoadable.inject({
+        loadInternal(name) {
+            $.ajax({
+                dataType: 'json',
+                url: ig.getFilePath(ig.root + name.toPath('data/credits/', '.json') + ig.getCacheSuffix()),
+                context: this,
+                success: this.onload.bind(this),
+                error: this.onerror.bind(this),
+            })
+        },
+    })
+}
+
+function disableSoundSystem() {
+    ig.MapSoundEntry.inject({
+        start() {
+            return
+        },
+        stop() {
+            return
+        },
+    })
+    ig.Sound.enabled = false
+    const emptySoundEntry = {
+        duration: 4.366666666666666,
+        length: 209600,
+        numberOfChannels: 2,
+        sampleRate: 48000,
+    }
+    ig.SoundManager.inject({
+        init() {
+            this.format = { ext: 'ogg', mime: 'audio/ogg; codecs=vorbis' }
+            this.parent()
+            this._createWebAudioContext()
+        },
+        loadWebAudio(path, loadCallback) {
+            ig.soundManager.buffers[path] = emptySoundEntry as AudioBuffer
+            loadCallback?.(path, true)
+        },
+    })
+}
+
+function injectSkipTitleScreen() {
+    if (!options.skipTitlescreen) return
+
+    sc.TitleScreenGui.inject({
+        init(...args) {
+            this.parent(...args)
+
+            this.introGui.timeLine = [{ time: 0, end: true }]
+            this.bgGui.parallax.addLoadListener({
+                onLoadableComplete: () => {
+                    let { timeLine } = this.bgGui
+                    if (!timeLine) return
                     // @ts-expect-error
-                    this.startGui = {
-                        show: () => {
-                            ig.interact.removeEntry(this.screenInteract)
-                            this.buttons.show()
-                        },
-                        hide: () => {},
-                    }
+                    let idx = timeLine.findIndex(item => item.time > 0)
+                    if (idx < 0) idx = timeLine.length
+                    timeLine.splice(idx, 0, { time: 0, goto: 'INTRO_SKIP_NOSOUND' })
                 },
             })
-        }
-
-        if (!options.nukeImageStack && options.writeImage) {
-            const inter = options.writeImageInterval ?? 1000 / 10
-
-            const PROFILE = false
-
-            async function getBufferFromCanvas(htmlCanvas: HTMLCanvasElement) {
-                const canvasAdapter = window.happyDOM.settings.canvasAdapter as NapiCanvasAdapter
-                const native = canvasAdapter.getNativeFor(htmlCanvas)!
-                const buf = native.encode!('png')
-                return buf
+            this.removeChildGui(this.startGui)
+            // @ts-expect-error
+            this.startGui = {
+                show: () => {
+                    ig.interact.removeEntry(this.screenInteract)
+                    this.buttons.show()
+                },
+                hide: () => {},
             }
-            async function saveCanvas(htmlCanvas: HTMLCanvasElement, filePath: string) {
-                PROFILE && console.time('saving ' + filePath)
-                const buf = await getBufferFromCanvas(htmlCanvas)
-                await fs.promises.writeFile(filePath, buf)
-                PROFILE && console.timeEnd('saving ' + filePath)
-            }
+        },
+    })
+}
 
-            const dir = process.platform === 'linux' ? '/tmp/crosscode' : ''
-            if (dir) fs.promises.mkdir('/tmp/crosscode', { recursive: true })
+function imageWrite() {
+    if (options.nukeImageStack || !options.writeImage) return
+    const inter = options.writeImageInterval ?? 1000 / 10
 
-            function getFilePath(instId: number) {
-                return `${dir}/image${instId}.png`
-            }
+    const PROFILE = false
 
-            let lastWritten = true
-            setInterval(async () => {
-                if (!window.ig || !ig.system || !ig.system.canvas || !lastWritten) return
-                lastWritten = false
-
-                const instanceinator = (window as any).instanceinator
-
-                if (options.writeImageInstanceinator) {
-                    await Promise.all(
-                        Object.values(instanceinator.instances)
-                            .filter((inst: any) => inst.display || inst.forceDraw || inst.crossnodeForceWriteImage)
-                            .map((inst: any) => {
-                                if (inst.crossnodeForceWriteImage) {
-                                    instanceinator.runTask(inst, () => {
-                                        ig.perf.draw = true
-                                        ig.game.draw()
-                                        ig.game.finalDraw()
-                                        ig.perf.draw = false
-                                    })
-                                }
-                                return inst
-                            })
-                            .map(inst => saveCanvas(inst.ig.system.canvas, getFilePath(inst.id)))
-                    )
-                } else {
-                    await saveCanvas(ig.system.canvas, getFilePath(0))
-                }
-                lastWritten = true
-            }, inter)
-        }
+    async function getBufferFromCanvas(htmlCanvas: HTMLCanvasElement) {
+        const canvasAdapter = window.happyDOM.settings.canvasAdapter as NapiCanvasAdapter
+        const native = canvasAdapter.getNativeFor(htmlCanvas)!
+        const buf = native.encode!('png')
+        return buf
     }
+    async function saveCanvas(htmlCanvas: HTMLCanvasElement, filePath: string) {
+        PROFILE && console.time('saving ' + filePath)
+        const buf = await getBufferFromCanvas(htmlCanvas)
+        await fs.promises.writeFile(filePath, buf)
+        PROFILE && console.timeEnd('saving ' + filePath)
+    }
+
+    const dir = process.platform === 'linux' ? '/tmp/crosscode' : ''
+    if (dir) fs.promises.mkdir('/tmp/crosscode', { recursive: true })
+
+    function getFilePath(instId: number) {
+        return `${dir}/image${instId}.png`
+    }
+
+    let lastWritten = true
+    setInterval(async () => {
+        if (!window.ig || !ig.system || !ig.system.canvas || !lastWritten) return
+        lastWritten = false
+
+        const instanceinator = (window as any).instanceinator
+
+        if (options.writeImageInstanceinator) {
+            await Promise.all(
+                Object.values(instanceinator.instances)
+                    .filter((inst: any) => inst.display || inst.forceDraw || inst.crossnodeForceWriteImage)
+                    .map((inst: any) => {
+                        if (inst.crossnodeForceWriteImage) {
+                            instanceinator.runTask(inst, () => {
+                                ig.perf.draw = true
+                                ig.game.draw()
+                                ig.game.finalDraw()
+                                ig.perf.draw = false
+                            })
+                        }
+                        return inst
+                    })
+                    .map(inst => saveCanvas(inst.ig.system.canvas, getFilePath(inst.id)))
+            )
+        } else {
+            await saveCanvas(ig.system.canvas, getFilePath(0))
+        }
+        lastWritten = true
+    }, inter)
+}
+
+function autoEnterGame() {
+    if (!options.autoEnterGame) options.skipTitlescreen = true
+
+    setTimeout(() => {
+        function keyPress(time: number, keyCode: number) {
+            return [
+                { time, event: 'keydown', opts: { keyCode } },
+                { time: 10, event: 'keyup', opts: { keyCode } },
+            ]
+        }
+        const actions = [...keyPress(2e3, 40), ...keyPress(10, 13), ...keyPress(5e3, 13), ...keyPress(500, 89), ...keyPress(10, 13)]
+        let i = 0
+
+        function nextAction() {
+            const act = actions[i++]
+            if (!act) return
+            setTimeout(() => {
+                window.dispatchEvent(new window.KeyboardEvent(act.event, act.opts))
+                nextAction()
+            }, act.time || 0)
+        }
+        nextAction()
+    }, 3e3)
 }
