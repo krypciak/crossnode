@@ -22,7 +22,7 @@ import * as child_process from 'child_process'
 // @ts-expect-error
 import bufferutil from 'bufferutil'
 import stringDecoder from 'string_decoder'
-import ws from 'ws'
+import * as ws from 'ws'
 import steamWeb from 'stream/web'
 import http2 from 'http2'
 import consoleImport from 'console'
