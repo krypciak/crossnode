@@ -29,6 +29,8 @@ export interface CrossnodeOptions {
     fps?: number
     skipFrameWait?: boolean
 
+    debugLogs?: boolean
+
     preload?: () => void
     postload?: () => void
     prestart?: () => void
@@ -67,8 +69,15 @@ function injectWaitForGame() {
     })
 }
 
+let debugLogging = false
+function log(str: string) {
+    if (!debugLogging) return
+    console.log(str)
+}
+
 export async function startCrossnode(options: CrossnodeOptions) {
     const launchDate = Date.now()
+    debugLogging = !!options.debugLogs
 
     if (!(await fileExists('favicon.png'))) {
         process.chdir('../../..')
@@ -92,7 +101,7 @@ export async function startCrossnode(options: CrossnodeOptions) {
 
     if (pluginClass) pluginClass.preload()
 
-    console.log('require game.compiled.js')
+    log('require game.compiled.js')
     require('../../../js/game.compiled.js')
 
     if (options.patchVarCondition) {
@@ -103,23 +112,23 @@ export async function startCrossnode(options: CrossnodeOptions) {
     injectWaitForGame()
 
     if (options.postload) options.postload()
-    console.log('postload')
+    log('postload')
     if (modloader) await ccloaderPostload(modloader)
     setDocumentLoadingState('complete')
 
-    console.log('prestart')
+    log('prestart')
     modloader?.loader.continue()
 
     if (pluginClass) pluginClass.prestart()
     if (options.prestart) options.prestart()
 
-    console.log('startCrossCode')
+    log('startCrossCode')
     window.startCrossCode()
 
-    console.log('waiting')
+    log('waiting')
     await window.crossnode.waitForGamePromise
 
-    console.log('poststart')
+    log('poststart')
     if (modloader) await ccloaderPoststart(modloader)
     if (options.poststart) options.poststart()
 
