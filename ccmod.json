@@ -6,5 +6,5 @@
     "repository": "https://github.com/krypciak/crossnode",
     "tags": ["dev"],
     "authors": ["krypek"],
-    "plugin": "src/plugin.js"
+    "plugin": "plugin.js"
 }

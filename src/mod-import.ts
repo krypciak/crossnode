@@ -29,7 +29,7 @@ const importMap: Record<string, () => any> = {
     // @ts-expect-error
     'mods/simplify/mod.js': () => import('../../simplify/mod.js'),
 
-    'mods/crossnode/src/plugin.js': () => import('./plugin.js'),
+    'mods/crossnode/plugin.js': () => import('../modSrc/plugin'),
     'mods/CCModManager/plugin.js': () => import('../../CCModManager/plugin.js'),
 
     'mods/cc-multibakery/plugin.js': () => import('../../cc-multibakery/plugin.js'),

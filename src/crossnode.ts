@@ -95,7 +95,7 @@ export async function startCrossnode(options: CrossnodeOptions) {
     }
 
     let pluginClass
-    if (!options.ccloader2) pluginClass = new (await import('./plugin.js')).default()
+    if (!options.ccloader2) pluginClass = new (await import('../modSrc/plugin')).default()
 
     const modloader = options.ccloader2 ? await ccloaderInit(options) : undefined
 

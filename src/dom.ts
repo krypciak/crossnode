@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { Window } from 'happy-dom'
+import { DetachedWindowAPI, Window } from 'happy-dom'
 import { getImageClass } from './canvas-backend'
 import { NapiCanvasAdapter } from './napi-canvas-adapter'
 
@@ -10,6 +10,12 @@ export function setDocumentLoadingState(state: DocumentReadyState): void {
             return state
         },
     })
+}
+
+declare global {
+    interface Window {
+        happyDOM: DetachedWindowAPI
+    }
 }
 
 export function initDom(): void {

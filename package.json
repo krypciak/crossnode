@@ -9,13 +9,10 @@
         "format": "oxfmt"
     },
     "devDependencies": {
-        "@napi-rs/canvas": "^1.1.0",
+        "@napi-rs/canvas": "^1.1.1",
         "@types/bun": "^1.4.4",
-        "@types/chrome": "^0.1.43",
         "@types/crypto-js": "^4.2.2",
-        "@types/jquery": "^4.0.1",
         "@types/jszip": "^3.4.1",
-        "@types/node": "^25.9.9",
         "@types/nw.js": "^0.115.0",
         "@types/semver": "^7.8.0",
         "@types/ws": "^8.18.2",
@@ -23,14 +20,19 @@
         "crypto-js": "^4.2.0",
         "happy-dom": "^21.0.4",
         "jpeg-js": "^0.4.4",
-        "node": "^26.13.0",
+        "node": "^26.13.1",
         "oxfmt": "^0.60.0",
         "pngjs": "^7.0.0",
         "pureimage": "^0.4.20",
         "semver": "^7.8.6",
         "supports-color": "^10.2.2",
         "typescript": "^7.0.2",
-        "ultimate-crosscode-typedefs": "github:krypciak/ultimate-crosscode-typedefs",
         "ws": "^8.22.2"
+    },
+    "dependencies": {
+        "@types/chrome": "^0.1.43",
+        "@types/jquery": "^4.0.1",
+        "@types/node": "^25.9.9",
+        "ultimate-crosscode-typedefs": "github:krypciak/ultimate-crosscode-typedefs"
     }
 }

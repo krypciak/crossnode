@@ -1,4 +1,6 @@
-const fs = require('fs')
+const fs: typeof import('fs') = (0, eval)(`require('fs')`)
+import type {} from '../src/crossnode'
+import type { NapiCanvasAdapter } from '../src/napi-canvas-adapter'
 
 const root = process.cwd() + '/assets/'
 
@@ -11,11 +13,11 @@ export default class CrossNode {
         /* mute the "INIT FULLSCREEN VALUE true" text */
         localStorage.setItem('IG_FULLSCREEN', '')
 
-        const imageSrcDescriptor = Object.getOwnPropertyDescriptor(Image.prototype, 'src')
+        const imageSrcDescriptor = Object.getOwnPropertyDescriptor(Image.prototype, 'src')!
         Object.defineProperty(Image.prototype, 'src', {
             configurable: true,
             get() {
-                return imageSrcDescriptor.get.call(this)
+                return imageSrcDescriptor.get!.call(this)
             },
             set(path) {
                 if (!path.startsWith('data:') && !path.startsWith('http')) {
@@ -25,13 +27,13 @@ export default class CrossNode {
                     }
                     path = root + path
                 }
-                imageSrcDescriptor.set.call(this, path)
+                imageSrcDescriptor.set!.call(this, path)
             },
         })
 
         window.Worker = class {
             postMessage() {}
-        }
+        } as any
     }
 
     prestart() {
@@ -116,20 +118,21 @@ export default class CrossNode {
                 $.ajax({ dataType: 'json', url: ig.getFilePath(ig.root + ig.TILEINFO_FILE + ig.getCacheSuffix()), context: this, success: this.onload.bind(this), error: this.onerror.bind(this) })
             },
         })
+
         ig.ExtensionList.inject({
             _getExtensionFolder() {
                 return root + 'extension/'
             },
             loadInternal() {
                 if (options.extensionWhitelist && options.extensionWhitelist.length == 0) {
-                    this.onDirRead(true)
+                    this.onDirRead(true as any, [])
                 } else {
                     fs.readdir(this._getExtensionFolder(), this.onDirRead.bind(this))
                 }
             },
             onExtensionListLoaded(list) {
                 if (options.extensionWhitelist) {
-                    list = list.filter(ext => options.extensionWhitelist.includes(ext))
+                    list = list.filter(ext => options.extensionWhitelist!.includes(ext))
                 }
 
                 const back = console.log
@@ -168,10 +171,10 @@ export default class CrossNode {
             },
         })
         sc.CreditSectionLoadable.inject({
-            loadInternal() {
+            loadInternal(name) {
                 $.ajax({
                     dataType: 'json',
-                    url: ig.getFilePath(ig.root + b.toPath('data/credits/', '.json') + ig.getCacheSuffix()),
+                    url: ig.getFilePath(ig.root + name.toPath('data/credits/', '.json') + ig.getCacheSuffix()),
                     context: this,
                     success: this.onload.bind(this),
                     error: this.onerror.bind(this),
@@ -179,9 +182,9 @@ export default class CrossNode {
             },
         })
 
-        ig.$ = function (a) {
+        ig.$ = function (selector) {
             // /* weird */ if (a == '#canvas') return canvas
-            return a.charAt(0) == '#' ? document.getElementById(a.substr(1)) : document.getElementsByTagName(a)
+            return selector.charAt(0) == '#' ? document.getElementById(selector.substring(1)) : document.getElementsByTagName(selector)
         }
 
         ig.MapSoundEntry.inject({
@@ -201,30 +204,20 @@ export default class CrossNode {
         }
         ig.SoundManager.inject({
             init() {
-                this.format = {
-                    ext: 'ogg',
-                }
+                this.format = { ext: 'ogg', mime: 'audio/ogg; codecs=vorbis' }
                 this.parent()
                 this._createWebAudioContext()
             },
-            loadWebAudio(c, d) {
-                ig.soundManager.buffers[c] = emptySoundEntry
-                d && d(c, true)
-            },
-        })
-        ig.TrackDefault.inject({
-            play() {
-                return
-            },
-            pause() {
-                return
+            loadWebAudio(path, loadCallback) {
+                ig.soundManager.buffers[path] = emptySoundEntry as AudioBuffer
+                loadCallback?.(path, true)
             },
         })
 
         if (options.autoEnterGame) {
             options.skipTitlescreen = true
             setTimeout(() => {
-                function keyPress(time, keyCode) {
+                function keyPress(time: number, keyCode: number) {
                     return [
                         { time, event: 'keydown', opts: { keyCode } },
                         { time: 10, event: 'keyup', opts: { keyCode } },
@@ -250,24 +243,26 @@ export default class CrossNode {
             sc.TitleScreenGui.inject({
                 init(...args) {
                     this.parent(...args)
-                    if (true) {
-                        this.introGui.timeLine = [{ time: 0, end: true }]
-                        this.bgGui.parallax.addLoadListener({
-                            onLoadableComplete: () => {
-                                let { timeLine } = this.bgGui
-                                let idx = timeLine.findIndex(item => item.time > 0)
-                                if (idx < 0) idx = timeLine.length
-                                timeLine.splice(idx, 0, { time: 0, goto: 'INTRO_SKIP_NOSOUND' })
-                            },
-                        })
-                        this.removeChildGui(this.startGui)
-                        this.startGui = {
-                            show: () => {
-                                ig.interact.removeEntry(this.screenInteract)
-                                this.buttons.show()
-                            },
-                            hide: () => {},
-                        }
+
+                    this.introGui.timeLine = [{ time: 0, end: true }]
+                    this.bgGui.parallax.addLoadListener({
+                        onLoadableComplete: () => {
+                            let { timeLine } = this.bgGui
+                            if (!timeLine) return
+                            // @ts-expect-error
+                            let idx = timeLine.findIndex(item => item.time > 0)
+                            if (idx < 0) idx = timeLine.length
+                            timeLine.splice(idx, 0, { time: 0, goto: 'INTRO_SKIP_NOSOUND' })
+                        },
+                    })
+                    this.removeChildGui(this.startGui)
+                    // @ts-expect-error
+                    this.startGui = {
+                        show: () => {
+                            ig.interact.removeEntry(this.screenInteract)
+                            this.buttons.show()
+                        },
+                        hide: () => {},
                     }
                 },
             })
@@ -278,12 +273,13 @@ export default class CrossNode {
 
             const PROFILE = false
 
-            async function getBufferFromCanvas(htmlCanvas) {
-                const native = window.happyDOM.settings.canvasAdapter.getNativeFor(htmlCanvas)
-                const buf = await native.encode('png')
+            async function getBufferFromCanvas(htmlCanvas: HTMLCanvasElement) {
+                const canvasAdapter = window.happyDOM.settings.canvasAdapter as NapiCanvasAdapter
+                const native = canvasAdapter.getNativeFor(htmlCanvas)!
+                const buf = native.encode!('png')
                 return buf
             }
-            async function saveCanvas(htmlCanvas, filePath) {
+            async function saveCanvas(htmlCanvas: HTMLCanvasElement, filePath: string) {
                 PROFILE && console.time('saving ' + filePath)
                 const buf = await getBufferFromCanvas(htmlCanvas)
                 await fs.promises.writeFile(filePath, buf)
@@ -293,7 +289,7 @@ export default class CrossNode {
             const dir = process.platform === 'linux' ? '/tmp/crosscode' : ''
             if (dir) fs.promises.mkdir('/tmp/crosscode', { recursive: true })
 
-            function getFilePath(instId) {
+            function getFilePath(instId: number) {
                 return `${dir}/image${instId}.png`
             }
 
@@ -302,11 +298,13 @@ export default class CrossNode {
                 if (!window.ig || !ig.system || !ig.system.canvas || !lastWritten) return
                 lastWritten = false
 
+                const instanceinator = (window as any).instanceinator
+
                 if (options.writeImageInstanceinator) {
                     await Promise.all(
                         Object.values(instanceinator.instances)
-                            .filter(inst => inst.display || inst.forceDraw || inst.crossnodeForceWriteImage)
-                            .map(inst => {
+                            .filter((inst: any) => inst.display || inst.forceDraw || inst.crossnodeForceWriteImage)
+                            .map((inst: any) => {
                                 if (inst.crossnodeForceWriteImage) {
                                     instanceinator.runTask(inst, () => {
                                         ig.perf.draw = true

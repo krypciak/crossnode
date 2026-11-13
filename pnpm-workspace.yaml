@@ -1,5 +1,6 @@
 allowBuilds:
   bufferutil: true
   node: true
+blockExoticSubdeps: false
 patchedDependencies:
   happy-dom@21.0.4: patches/happy-dom@21.0.4.patch
