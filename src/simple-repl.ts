@@ -1,5 +1,6 @@
 import type * as readline from 'readline'
 import type { ReplOptions, REPLServer } from 'repl'
+import { isPorffor } from './util'
 
 export function createFakeReplModuleWithSimpleRepl(): typeof import('repl') {
     return {
@@ -85,7 +86,7 @@ export class SimpleRepl {
 
     private evaluate(code: string) {
         try {
-            const result = (0, eval)(code)
+            const result = isPorffor() ? evaluateGlobalPath(code) : (0, eval)(code)
             if (!this.settings.ignoreUndefined || result !== undefined) {
                 console.log(result)
             }
@@ -103,4 +104,20 @@ export class SimpleRepl {
         if (event != 'exit') throw new Error(`SimpleRepl#on only supported events are: ['exit'], called: .on('${event}')`)
         this.onExit = func
     }
+}
+
+function readGlobalPath(path: string[], object: any): any {
+    for (const key of path) {
+        if (object == null) throw new TypeError(`Cannot read properties of ${object} (reading '${key}')`)
+        object = object[key]
+    }
+    return object
+}
+
+function evaluateGlobalPath(code: string): any {
+    const path = code.replace(/;$/, '').split('.')
+    if (!path.every(x => /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(x))) {
+        throw new Error(`SimpleRepl under Porffor only supports dotted property paths, got: ${code}`)
+    }
+    return readGlobalPath(path, globalThis)
 }
