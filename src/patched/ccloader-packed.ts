@@ -100,17 +100,17 @@ export class PackedManagerClass {
 
     _contentType(url: string): string {
         url = this._normalize(url)
-        return CONTENT_TYPES[url.substr(url.lastIndexOf('.') + 1)] || 'text/plain'
+        return CONTENT_TYPES[url.slice(url.lastIndexOf('.') + 1)] || 'text/plain'
     }
 
     _zipPath(url: string) {
         url = this._normalize(url)
-        return url.substr(0, url.indexOf('/', ASSETS_MODS_LENGTH))
+        return url.substring(0, url.indexOf('/', ASSETS_MODS_LENGTH))
     }
 
     _assetPath(url: string) {
         url = this._normalize(url)
-        return url.substr(url.indexOf('/', ASSETS_MODS_LENGTH) + 1)
+        return url.slice(url.indexOf('/', ASSETS_MODS_LENGTH) + 1)
     }
 
     _normalize(url: string) {
@@ -120,7 +120,7 @@ export class PackedManagerClass {
             url = '/' + url
         }
         if (url.startsWith('/ccloader')) {
-            url = url.substr(9) // '/ccloader'.length
+            url = url.slice(9) // '/ccloader'.length
         }
         return url
     }
