@@ -106,7 +106,7 @@ export class SimpleRepl {
     }
 }
 
-function readGlobalPath(path: string[], object: any): any {
+function readGlobalPath(path: (string | number)[], object: any): any {
     for (const key of path) {
         // probing a path (`ig.game.player.name`) is not an error: a missing
         // intermediate simply means the whole expression is undefined
@@ -116,10 +116,45 @@ function readGlobalPath(path: string[], object: any): any {
     return object
 }
 
-function evaluateGlobalPath(code: string): any {
-    const path = code.replace(/;$/, '').split('.')
-    if (!path.every(x => /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(x))) {
-        throw new Error(`SimpleRepl under Porffor only supports dotted property paths, got: ${code}`)
+// Split `a.b[2].c`, `a["b"][2]` or `a.b.2.c` into property keys.
+function parseGlobalPath(code: string): (string | number)[] {
+    const path: (string | number)[] = []
+    const length = code.length
+    let i = 0
+
+    while (i < length) {
+        const ch = code[i]
+        if (ch === '.') {
+            i++
+            continue
+        }
+        if (ch === '[') {
+            const close = code.indexOf(']', i + 1)
+            const inner = close === -1 ? '' : code.slice(i + 1, close).trim()
+            const quote = inner[0]
+            if (/^\d+$/.test(inner)) path.push(Number(inner))
+            else if (inner.length >= 2 && (quote === '"' || quote === "'") && inner[inner.length - 1] === quote) {
+                path.push(inner.slice(1, -1))
+            } else throw new Error(`SimpleRepl under Porffor expected a number or string in [], got: ${code}`)
+            i = close + 1
+            if (i < length && code[i] !== '.' && code[i] !== '[') {
+                throw new Error(`SimpleRepl under Porffor only supports property paths like a.b or a[0].c, got: ${code}`)
+            }
+            continue
+        }
+
+        const start = i
+        while (i < length && /[A-Za-z0-9_$]/.test(code[i])) i++
+        const part = code.slice(start, i)
+        if (!part) throw new Error(`SimpleRepl under Porffor only supports property paths like a.b or a[0].c, got: ${code}`)
+        if (/^\d+$/.test(part)) path.push(Number(part))
+        else if (/^[A-Za-z_$]/.test(part)) path.push(part)
+        else throw new Error(`SimpleRepl under Porffor only supports property paths like a.b or a[0].c, got: ${code}`)
     }
-    return readGlobalPath(path, globalThis)
+
+    return path
+}
+
+function evaluateGlobalPath(code: string): any {
+    return readGlobalPath(parseGlobalPath(code.replace(/;$/, '')), globalThis)
 }
