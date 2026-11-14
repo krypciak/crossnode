@@ -108,7 +108,9 @@ export class SimpleRepl {
 
 function readGlobalPath(path: string[], object: any): any {
     for (const key of path) {
-        if (object == null) throw new TypeError(`Cannot read properties of ${object} (reading '${key}')`)
+        // probing a path (`ig.game.player.name`) is not an error: a missing
+        // intermediate simply means the whole expression is undefined
+        if (object == null) return undefined
         object = object[key]
     }
     return object
