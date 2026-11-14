@@ -58,7 +58,7 @@ importers:
         version: 7.0.0
       pocketdom:
         specifier: github:krypciak/pocketdom
-        version: https://codeload.github.com/krypciak/pocketdom/tar.gz/c6057f88e124d17b03028578ef14bd91e6cb3169(@napi-rs/canvas@1.1.1)(jpeg-js@0.4.4)(pngjs@7.0.0)(pureimage@0.4.20)
+        version: https://codeload.github.com/krypciak/pocketdom/tar.gz/7663787f13f24d067435e3ed4ff9eb0031141a4d(@napi-rs/canvas@1.1.1)(jpeg-js@0.4.4)(pngjs@7.0.0)(pureimage@0.4.20)
       pureimage:
         specifier: ^0.4.20
         version: 0.4.20
@@ -508,8 +508,8 @@ packages:
     resolution: {integrity: sha512-LKWqWJRhstyYo9pGvgor/ivk2w94eSjE3RGVuzLGlr3NmD8bf7RcYGze1mNdEHRP6TRP6rMuDHk5t44hnTRyow==}
     engines: {node: '>=14.19.0'}
 
-  pocketdom@https://codeload.github.com/krypciak/pocketdom/tar.gz/c6057f88e124d17b03028578ef14bd91e6cb3169:
-    resolution: {gitHosted: true, integrity: sha512-VFyjgmXk65he+wJlQ+U6VC8FW2BGAUcY9OzpxmlgzHWtCiMQBssz9iNMPdkbIZ/b+YQIkCgSKUld9JEpx6nbmQ==, tarball: https://codeload.github.com/krypciak/pocketdom/tar.gz/c6057f88e124d17b03028578ef14bd91e6cb3169}
+  pocketdom@https://codeload.github.com/krypciak/pocketdom/tar.gz/7663787f13f24d067435e3ed4ff9eb0031141a4d:
+    resolution: {gitHosted: true, integrity: sha512-jQf+m6kIVDALOYF7NC0Tsg34zsT0ev/Islq+MZo2tIOYRlfdESiSjBBkQbGewEiuPmHwqbXyiUEmwzeA8JNlyw==, tarball: https://codeload.github.com/krypciak/pocketdom/tar.gz/7663787f13f24d067435e3ed4ff9eb0031141a4d}
     version: 0.1.0
     peerDependencies:
       '@napi-rs/canvas': '*'
@@ -868,7 +868,7 @@ snapshots:
 
   pngjs@7.0.0: {}
 
-  pocketdom@https://codeload.github.com/krypciak/pocketdom/tar.gz/c6057f88e124d17b03028578ef14bd91e6cb3169(@napi-rs/canvas@1.1.1)(jpeg-js@0.4.4)(pngjs@7.0.0)(pureimage@0.4.20):
+  pocketdom@https://codeload.github.com/krypciak/pocketdom/tar.gz/7663787f13f24d067435e3ed4ff9eb0031141a4d(@napi-rs/canvas@1.1.1)(jpeg-js@0.4.4)(pngjs@7.0.0)(pureimage@0.4.20):
     optionalDependencies:
       '@napi-rs/canvas': 1.1.1
       jpeg-js: 0.4.4

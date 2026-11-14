@@ -39,6 +39,9 @@ export function initDom(): void {
                 return null
             }
         },
+        readFileAsync(path: string) {
+            return fs.promises.readFile(path)
+        },
     })
 
     const win = createWindow({
