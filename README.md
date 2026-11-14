@@ -47,6 +47,17 @@ Known limitations compared to Skia:
 
 Bun/Node users should keep the default native backend for pixel-accurate output.
 
+## Networking under Porffor
+
+Porffor's `https` server uses uWebSockets' TLS support, which cannot hand the
+decrypted socket to the `ws` library. A `wss://` server therefore accepts the
+TCP connection but never completes the WebSocket handshake (`porf_uws_detach()`
+returns `-1` for TLS).
+
+Porffor builds always serve plain `http://`, and clients probe both schemes in
+`getServerDetails`. Keep that in mind when connecting a client to a Porffor
+server: it announces and serves plain HTTP even if the settings request TLS.
+
 ## DOM and canvas
 
 CrossCode expects a browser environment (`window`, `document`, `XMLHttpRequest`, ...).
