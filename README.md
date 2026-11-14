@@ -1,10 +1,10 @@
 # crossnode
 
-Run CrossCode headless through node!  
+Run CrossCode headless through node!
 
 ## Setup
 
-NOTE: `.ccmod` are not supported! Please unpack them first.  
+NOTE: `.ccmod` are not supported! Please unpack them first.
 
 ```bash
 CROSSCODE_DIR="/path/to/crosscode/root"
@@ -16,9 +16,11 @@ pnpm install
 bun ./setup.ts # this will ensure your setup is mostly correct
 pnpm start
 ```
+
 You can adjust crossnode settings in `start.js`.  
 For the entire options list see [crossnode.d.ts](./crossnode.d.ts).  
-For example usage see [cc-multibakery](https://github.com/krypciak/cc-multibakery) crossnode scripts:  
+For example usage see [cc-multibakery](https://github.com/krypciak/cc-multibakery) crossnode scripts:
+
 - [server start script](https://github.com/krypciak/cc-multibakery/blob/main/scripts/server.js)
 
 ## Canvas backends
@@ -44,3 +46,13 @@ Known limitations compared to Skia:
 - Rasterization and text metrics can differ from Skia, and per-pixel drawing is slower.
 
 Bun/Node users should keep the default native backend for pixel-accurate output.
+
+## DOM and canvas
+
+CrossCode expects a browser environment (`window`, `document`, `XMLHttpRequest`, ...).
+That environment comes from [`pocketdom`](https://github.com/krypciak/pocketdom), a small
+hand written DOM + canvas + `XMLHttpRequest` implementation for non-browser runtimes.
+
+[`src/dom.ts`](./src/dom.ts) is the only glue: it installs the canvas backend, points
+`XMLHttpRequest` at `fs`, builds the initial document (`#overlay`, `#status`, `#ui`,
+`#game > #canvas`) and exposes the DOM classes as globals.

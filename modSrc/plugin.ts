@@ -1,5 +1,4 @@
 import type {} from '../src/crossnode'
-import type { NapiCanvasAdapter } from '../src/napi-canvas-adapter'
 
 const root = process.cwd() + '/assets/'
 const fs: typeof import('fs') = (0, eval)(`require('fs')`)
@@ -26,7 +25,7 @@ export default class CrossNode {
     }
 
     poststart() {
-        console.log("poststart")
+        console.log('poststart')
         autoEnterGame()
     }
 }
@@ -292,10 +291,10 @@ function imageWrite() {
     const PROFILE = false
 
     async function getBufferFromCanvas(htmlCanvas: HTMLCanvasElement) {
-        const canvasAdapter = window.happyDOM.settings.canvasAdapter as NapiCanvasAdapter
-        const native = canvasAdapter.getNativeFor(htmlCanvas)!
-        const buf = native.encode!('png')
-        return buf
+        const native = (htmlCanvas as any).__nativeCanvas
+        if (typeof native.encode === 'function') return native.encode('png')
+        if (typeof native.toBuffer === 'function') return native.toBuffer('png')
+        return (htmlCanvas as any).toDataURL('image/png')
     }
     async function saveCanvas(htmlCanvas: HTMLCanvasElement, filePath: string) {
         PROFILE && console.time('saving ' + filePath)

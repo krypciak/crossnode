@@ -188,11 +188,6 @@ export async function initLibs() {
         value: global.localStorage,
     })
 
-    global.HTMLCanvasElement = window.HTMLCanvasElement
-
-    // @ts-expect-error
-    window.HTMLElement = global.HTMLElement = function () {}
-
     const jq = createJQuery(window) as unknown as JQueryStatic
     ;(window as any).$ = (global as any).$ = jq
     ;(window as any).jQuery = (global as any).jQuery = jq

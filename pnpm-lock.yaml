@@ -4,9 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-patchedDependencies:
-  happy-dom@21.0.4: 265025117df76fe43f5ff6586383fda840cb6dfb2a1d3fcd618c7b563d76074e
-
 importers:
 
   .:
@@ -47,9 +44,6 @@ importers:
       crypto-js:
         specifier: ^4.2.0
         version: 4.2.0
-      happy-dom:
-        specifier: ^21.0.4
-        version: 21.0.4(patch_hash=265025117df76fe43f5ff6586383fda840cb6dfb2a1d3fcd618c7b563d76074e)(bufferutil@4.2.0)
       jpeg-js:
         specifier: ^0.4.4
         version: 0.4.4
@@ -62,6 +56,9 @@ importers:
       pngjs:
         specifier: ^7.0.0
         version: 7.0.0
+      pocketdom:
+        specifier: github:krypciak/pocketdom
+        version: https://codeload.github.com/krypciak/pocketdom/tar.gz/c6057f88e124d17b03028578ef14bd91e6cb3169(@napi-rs/canvas@1.1.1)(jpeg-js@0.4.4)(pngjs@7.0.0)(pureimage@0.4.20)
       pureimage:
         specifier: ^0.4.20
         version: 0.4.20
@@ -320,9 +317,6 @@ packages:
   '@types/semver@7.8.0':
     resolution: {integrity: sha512-1mAINjtQCXXeLkJ9ehXkwOcBpqtLxiVtKhpUf83DdRNdQKV0iXZpaHYqRr7nj+wvxuJzoAmAwXI+sCNMv1CzLQ==}
 
-  '@types/whatwg-mimetype@3.0.2':
-    resolution: {integrity: sha512-c2AKvDT8ToxLIOUlN51gTiHXflsfIFisS4pO7pDPoKouJCESkhZnEy623gwP9laCy5lnLDAw1vAzu2vM2YLOrA==}
-
   '@types/ws@8.18.2':
     resolution: {integrity: sha512-67MQl+fpWKVTT1NYdnmo3U4sc/xPo/zQBncVnI74qmQa0z/b+1g6iYqNmGCPbxO+zz2aklb08a0oHfegiVd0/w==}
 
@@ -446,10 +440,6 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  buffer-image-size@0.6.4:
-    resolution: {integrity: sha512-nEh+kZOPY1w+gcCMobZ6ETUp9WfibndnosbpwB1iJk/8Gt5ZF2bhS6+B6bPYz424KtwsR6Rflc3tCz1/ghX2dQ==}
-    engines: {node: '>=4.0'}
-
   bufferutil@4.2.0:
     resolution: {integrity: sha512-gyy58jET9kst2IGyBKb96a4Y2bPGTHXGyCd0/1eqIV3hr1Sz3VxtA8n7bXh8fLIuE2K6Z0Upax5a5Msx+HU1IQ==}
     engines: {node: '>=6.14.2'}
@@ -463,14 +453,6 @@ packages:
   crypto-js@4.2.0:
     resolution: {integrity: sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==}
     deprecated: Active development of CryptoJS has been discontinued. This library is no longer maintained.
-
-  entities@7.0.1:
-    resolution: {integrity: sha512-TWrgLOFUQTH994YUyl1yT4uyavY5nNB5muff+RtWaqNVCAK408b5ZnnbNAUEWLTCpum9w6arT70i1XdQ4UeOPA==}
-    engines: {node: '>=0.12'}
-
-  happy-dom@21.0.4:
-    resolution: {integrity: sha512-tFm+GaLBgo6o0awHnvHaNoraVo27qJ+2tZEtZ+cIa08hXbeitrxAJajLI05hsUy/2/YTKcUjQYzHe5mCcraLBw==}
-    engines: {node: '>=20.0.0'}
 
   immediate@3.0.6:
     resolution: {integrity: sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ==}
@@ -526,6 +508,24 @@ packages:
     resolution: {integrity: sha512-LKWqWJRhstyYo9pGvgor/ivk2w94eSjE3RGVuzLGlr3NmD8bf7RcYGze1mNdEHRP6TRP6rMuDHk5t44hnTRyow==}
     engines: {node: '>=14.19.0'}
 
+  pocketdom@https://codeload.github.com/krypciak/pocketdom/tar.gz/c6057f88e124d17b03028578ef14bd91e6cb3169:
+    resolution: {gitHosted: true, integrity: sha512-VFyjgmXk65he+wJlQ+U6VC8FW2BGAUcY9OzpxmlgzHWtCiMQBssz9iNMPdkbIZ/b+YQIkCgSKUld9JEpx6nbmQ==, tarball: https://codeload.github.com/krypciak/pocketdom/tar.gz/c6057f88e124d17b03028578ef14bd91e6cb3169}
+    version: 0.1.0
+    peerDependencies:
+      '@napi-rs/canvas': '*'
+      jpeg-js: '*'
+      pngjs: '*'
+      pureimage: '*'
+    peerDependenciesMeta:
+      '@napi-rs/canvas':
+        optional: true
+      jpeg-js:
+        optional: true
+      pngjs:
+        optional: true
+      pureimage:
+        optional: true
+
   process-nextick-args@2.0.1:
     resolution: {integrity: sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==}
 
@@ -576,10 +576,6 @@ packages:
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
-
-  whatwg-mimetype@3.0.0:
-    resolution: {integrity: sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q==}
-    engines: {node: '>=12'}
 
   ws@8.22.2:
     resolution: {integrity: sha512-/rEZ2ejown2N5gxVTHUu9bVVC7ttu0/Tgzf5hbTOixR3Fs7mbbXgn2DbdbcKgJOmpQMtrIUWivtYuVMnp/W/yA==}
@@ -738,8 +734,6 @@ snapshots:
 
   '@types/semver@7.8.0': {}
 
-  '@types/whatwg-mimetype@3.0.2': {}
-
   '@types/ws@8.18.2':
     dependencies:
       '@types/node': 25.9.9
@@ -804,10 +798,6 @@ snapshots:
   '@typescript/typescript-win32-x64@7.0.2':
     optional: true
 
-  buffer-image-size@0.6.4:
-    dependencies:
-      '@types/node': 25.9.9
-
   bufferutil@4.2.0:
     dependencies:
       node-gyp-build: 4.8.4
@@ -820,21 +810,6 @@ snapshots:
   core-util-is@1.0.3: {}
 
   crypto-js@4.2.0: {}
-
-  entities@7.0.1: {}
-
-  happy-dom@21.0.4(patch_hash=265025117df76fe43f5ff6586383fda840cb6dfb2a1d3fcd618c7b563d76074e)(bufferutil@4.2.0):
-    dependencies:
-      '@types/node': 25.9.9
-      '@types/whatwg-mimetype': 3.0.2
-      '@types/ws': 8.18.2
-      buffer-image-size: 0.6.4
-      entities: 7.0.1
-      whatwg-mimetype: 3.0.0
-      ws: 8.22.2(bufferutil@4.2.0)
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
 
   immediate@3.0.6: {}
 
@@ -892,6 +867,13 @@ snapshots:
   pako@1.0.11: {}
 
   pngjs@7.0.0: {}
+
+  pocketdom@https://codeload.github.com/krypciak/pocketdom/tar.gz/c6057f88e124d17b03028578ef14bd91e6cb3169(@napi-rs/canvas@1.1.1)(jpeg-js@0.4.4)(pngjs@7.0.0)(pureimage@0.4.20):
+    optionalDependencies:
+      '@napi-rs/canvas': 1.1.1
+      jpeg-js: 0.4.4
+      pngjs: 7.0.0
+      pureimage: 0.4.20
 
   process-nextick-args@2.0.1: {}
 
@@ -959,8 +941,6 @@ snapshots:
   undici-types@8.12.4: {}
 
   util-deprecate@1.0.2: {}
-
-  whatwg-mimetype@3.0.0: {}
 
   ws@8.22.2(bufferutil@4.2.0):
     optionalDependencies:
