@@ -25,7 +25,6 @@ export default class CrossNode {
     }
 
     poststart() {
-        console.log('poststart')
         autoEnterGame()
     }
 }
