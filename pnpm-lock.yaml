@@ -73,10 +73,10 @@ importers:
         version: 7.0.2
       ultimate-crosscode-typedefs:
         specifier: github:krypciak/ultimate-crosscode-typedefs
-        version: https://codeload.github.com/krypciak/ultimate-crosscode-typedefs/tar.gz/12d912dd735339feee4d1619ad96e77e73b472cb
+        version: https://codeload.github.com/krypciak/ultimate-crosscode-typedefs/tar.gz/9f22764a16e644d8e40bfae2627fa7e6cd3d78d6
       ws:
-        specifier: ^8.22.2
-        version: 8.22.2(bufferutil@4.2.0)
+        specifier: ^8.23.0
+        version: 8.23.0(bufferutil@4.2.0)
 
 packages:
 
@@ -563,8 +563,8 @@ packages:
     engines: {node: '>=16.20.0'}
     hasBin: true
 
-  ultimate-crosscode-typedefs@https://codeload.github.com/krypciak/ultimate-crosscode-typedefs/tar.gz/12d912dd735339feee4d1619ad96e77e73b472cb:
-    resolution: {gitHosted: true, integrity: sha512-ESBvuojTBgJG54Db2kPearWRfJFg0x5q6p0P+qHRctiUFsZjCVYavi4EutKIS4ZFLnWaPDtHlZElDMtfwlp/Hw==, tarball: https://codeload.github.com/krypciak/ultimate-crosscode-typedefs/tar.gz/12d912dd735339feee4d1619ad96e77e73b472cb}
+  ultimate-crosscode-typedefs@https://codeload.github.com/krypciak/ultimate-crosscode-typedefs/tar.gz/9f22764a16e644d8e40bfae2627fa7e6cd3d78d6:
+    resolution: {gitHosted: true, integrity: sha512-ZajnRw/5QbSxcxdxHbeW5nYqNlnkgBCLRbAayy69i737JCu4wttq5pDsfsE3Hm6BuvWt5x/rNqEIidtxGSneOw==, tarball: https://codeload.github.com/krypciak/ultimate-crosscode-typedefs/tar.gz/9f22764a16e644d8e40bfae2627fa7e6cd3d78d6}
     version: 0.0.1
     engines: {node: '>=10.0.0'}
 
@@ -577,8 +577,8 @@ packages:
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
-  ws@8.22.2:
-    resolution: {integrity: sha512-/rEZ2ejown2N5gxVTHUu9bVVC7ttu0/Tgzf5hbTOixR3Fs7mbbXgn2DbdbcKgJOmpQMtrIUWivtYuVMnp/W/yA==}
+  ws@8.23.0:
+    resolution: {integrity: sha512-wCkmX8QMOrKjgO8HW2WyDbTSGeqkocxgDzS9iR79rEAexty6/2qzilx3Ag8Tqf9ykop3irLKle0MtVn5qjVnoQ==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -930,7 +930,7 @@ snapshots:
       '@typescript/typescript-win32-arm64': 7.0.2
       '@typescript/typescript-win32-x64': 7.0.2
 
-  ultimate-crosscode-typedefs@https://codeload.github.com/krypciak/ultimate-crosscode-typedefs/tar.gz/12d912dd735339feee4d1619ad96e77e73b472cb:
+  ultimate-crosscode-typedefs@https://codeload.github.com/krypciak/ultimate-crosscode-typedefs/tar.gz/9f22764a16e644d8e40bfae2627fa7e6cd3d78d6:
     dependencies:
       '@types/jquery': 1.10.45
       '@types/node': 25.9.9
@@ -942,6 +942,6 @@ snapshots:
 
   util-deprecate@1.0.2: {}
 
-  ws@8.22.2(bufferutil@4.2.0):
+  ws@8.23.0(bufferutil@4.2.0):
     optionalDependencies:
       bufferutil: 4.2.0

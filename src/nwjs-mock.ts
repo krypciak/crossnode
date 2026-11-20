@@ -117,6 +117,9 @@ function audioFix() {
             load() {
                 // console.log(`Audio: load()`)
             },
+            canPlayType(_type: string) {
+                return true
+            },
         }
     }
 }

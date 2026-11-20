@@ -214,7 +214,6 @@ function disableSoundSystem() {
             return
         },
     })
-    ig.Sound.enabled = false
     const emptySoundEntry = {
         duration: 4.366666666666666,
         length: 209600,
@@ -230,6 +229,11 @@ function disableSoundSystem() {
         loadWebAudio(path, loadCallback) {
             ig.soundManager.buffers[path] = emptySoundEntry as AudioBuffer
             loadCallback?.(path, true)
+        },
+    })
+    ig.SoundHandleWebAudio.inject({
+        play() {
+            this._playing = true
         },
     })
 }
