@@ -309,7 +309,7 @@ export class SimplifyResources {
         const result: string[] = []
 
         // @ts-expect-error
-        for (const mod of window.activeMods) {
+        for (const mod of (window.activeMods as Mod[])) {
             const asset = mod.getAsset(name)
             if (asset) {
                 if (typeof asset === 'string') {
@@ -327,7 +327,7 @@ export class SimplifyResources {
         const result: { mod: Mod; path: string }[] = []
 
         // @ts-expect-error
-        for (const mod of window.activeMods) {
+        for (const mod of (window.activeMods as Mod[])) {
             const asset = mod.getAsset(name)
 
             if (asset) {
