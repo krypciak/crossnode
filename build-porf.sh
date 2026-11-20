@@ -9,3 +9,4 @@ node --max-old-space-size=16384 --experimental-import-text \
     "$porf_index" native \
     $opt --define:process.env.CROSSNODE_CANVAS=true \
     "$index_file" -o por.exe
+    # -d
