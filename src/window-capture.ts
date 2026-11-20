@@ -29,18 +29,15 @@ export function setupWindowCapture() {
     window.IG_GAME_DEBUG = global.IG_GAME_DEBUG = false
     window.IG_GAME_BETA = global.IG_GAME_BETA = false
     /* Capture window variables */
-    const toCapture: (keyof typeof globalThis)[] = [
+    const toCapture = [
         'sc',
         'ig',
         'Vec2',
         'Vec3',
-        // @ts-expect-error
         'Line2',
         'KeySpline',
         'KEY_SPLINES',
-        // @ts-expect-error
         'assert',
-        // @ts-expect-error
         'assertContent',
         'sc',
         'Constants',
@@ -53,40 +50,26 @@ export function setupWindowCapture() {
         'IG_WEB_AUDIO_BGM',
         'requestAnimationFrame',
         'IG_ENTITY_KILL_CALL',
-        // @ts-expect-error
         'IS_IT_CUBAUM',
-        // @ts-expect-error
         'checkPlayerPos',
         'testGui',
         'startCrossCode',
-        // @ts-expect-error
         'activeMods',
-        // @ts-expect-error
         'inactiveMods',
         'Plugin',
-        // @ts-expect-error
         'versions',
-        // @ts-expect-error
         'Greenworks',
         'simplifyResources',
-        // @ts-expect-error
         'isLocal',
         'crossnode',
         'ccmod',
-        /* mod specific */
-        // @ts-expect-error
         'modmanager',
-        // @ts-expect-error
         'cc',
-        // @ts-expect-error
         'nax',
-        // @ts-expect-error
         'entries',
-        // @ts-expect-error
         'simplify',
-        // @ts-expect-error
         'customPlayerMenus',
-    ]
+    ] as string[] as (keyof typeof globalThis)[]
 
     for (const name of toCapture) {
         captureWindowVar(name)

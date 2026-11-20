@@ -308,8 +308,9 @@ export class SimplifyResources {
     _getAllAssets(name: string): string[] {
         const result: string[] = []
 
-        // @ts-expect-error
-        for (const mod of (window.activeMods as Mod[])) {
+        // avoid type errors
+        const activeMods = 'activeMods' in window ? (window.activeMods as Mod[]) : []
+        for (const mod of activeMods) {
             const asset = mod.getAsset(name)
             if (asset) {
                 if (typeof asset === 'string') {
@@ -326,8 +327,9 @@ export class SimplifyResources {
     _getAllAssetDetails(name: string): { mod: Mod; path: string }[] {
         const result: { mod: Mod; path: string }[] = []
 
-        // @ts-expect-error
-        for (const mod of (window.activeMods as Mod[])) {
+        // avoid type errors
+        const activeMods = 'activeMods' in window ? (window.activeMods as Mod[]) : []
+        for (const mod of activeMods) {
             const asset = mod.getAsset(name)
 
             if (asset) {
